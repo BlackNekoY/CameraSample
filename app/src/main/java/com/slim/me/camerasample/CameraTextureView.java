@@ -8,6 +8,9 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.TextureView;
 
+import com.slim.me.camerasample.camera.CameraHelper;
+import com.slim.me.camerasample.util.UIUtil;
+
 import java.io.IOException;
 
 /**
@@ -17,7 +20,6 @@ import java.io.IOException;
 public class CameraTextureView extends TextureView implements TextureView.SurfaceTextureListener {
 
     private static final String TAG = "CameraTextureView";
-    private CameraHelper mHelper;
 
     public CameraTextureView(Context context) {
         this(context, null);
@@ -36,70 +38,61 @@ public class CameraTextureView extends TextureView implements TextureView.Surfac
         setSurfaceTextureListener(this);
     }
 
-    private void setupCameraParams(Camera camera) {
-        Camera.Parameters param = camera.getParameters();
-        param.setPreviewFormat(ImageFormat.YV12);
-        camera.setDisplayOrientation(90);
+    private void setupCameraParams(int width, int height) {
+        Camera.Parameters param = CameraHelper.getInstance().getCameraParameters();
+        if(param != null) {
+            param.setPreviewFormat(ImageFormat.YV12);
 
-        camera.setParameters(param);
+            CameraHelper.getInstance().stopPreview();
+            CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
+                    UIUtil.getWindowScreenWidth(getContext()), UIUtil.getWindowScreenHeight(getContext()));
+            if(sizes != null) {
+                CameraHelper.CustomSize pictureSize = sizes[0];
+                CameraHelper.CustomSize previewSize = sizes[1];
+
+                param.setPictureSize(pictureSize.width, pictureSize.height);
+                param.setPreviewSize(previewSize.width, previewSize.height);
+            }
+            CameraHelper.getInstance().setCameraParameters(param);
+        }
+        CameraHelper.getInstance().setDisplayOrientation(90);
     }
 
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-            Log.d(TAG, "onSurfaceTextureAvailable");
-            Camera camera = CameraHelper.getInstance().getCamera();
-
-        if(camera != null) {
-            setupCameraParams(camera);
-            try {
-                camera.setPreviewTexture(surface);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            camera.startPreview();
-        }
+        Log.d(TAG, "onSurfaceTextureAvailable");
+        setupCameraParams(width, height);
+        CameraHelper.getInstance().setSurfaceTexture(surface);
+        CameraHelper.getInstance().startPreview();
     }
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
         Log.d(TAG, "onSurfaceTextureSizeChanged");
 
-        Camera camera = CameraHelper.getInstance().getCamera();
+        CameraHelper.getInstance().stopPreview();
+        CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
+                UIUtil.getWindowScreenWidth(getContext()), UIUtil.getWindowScreenHeight(getContext()));
+        if(sizes != null) {
+            Camera.Parameters param = CameraHelper.getInstance().getCameraParameters();
+            if(param != null) {
+                CameraHelper.CustomSize pictureSize = sizes[0];
+                CameraHelper.CustomSize previewSize = sizes[1];
 
-        if (camera != null) {
-            camera.stopPreview();
+                param.setPictureSize(pictureSize.width, pictureSize.height);
+                param.setPreviewSize(previewSize.width, previewSize.height);
 
-            Camera.Size previewSize = CameraHelper.getFitPreviewSize(camera, width, height);
-            if (previewSize != null) {
-                camera.getParameters().setPreviewSize(previewSize.width, previewSize.height);
-            }
-
-            Camera.Size pictureSize = CameraHelper.getFitPictureSize(camera, width, height);
-            if(pictureSize != null) {
-                camera.getParameters().setPictureSize(pictureSize.width, pictureSize.height);
-            }
-
-            try {
-                camera.setPreviewTexture(surface);
-                camera.startPreview();
-            } catch (IOException e) {
-                e.printStackTrace();
+                CameraHelper.getInstance().setCameraParameters(param);
             }
         }
+        CameraHelper.getInstance().setSurfaceTexture(surface);
+        CameraHelper.getInstance().startPreview();
     }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        Camera camera = CameraHelper.getInstance().getCamera();
-        if(camera != null) {
-            try {
-                camera.setPreviewTexture(null);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            camera.stopPreview();
-        }
+        CameraHelper.getInstance().stopPreview();
         return false;
     }
 

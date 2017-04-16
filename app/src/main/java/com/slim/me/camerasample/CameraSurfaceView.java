@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.slim.me.camerasample.camera.CameraHelper;
+
 import java.io.IOException;
 
 

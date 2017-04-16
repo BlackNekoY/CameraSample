@@ -3,7 +3,6 @@ package com.slim.me.camerasample;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
-import android.opengl.GLUtils;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,6 +12,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
+
+import com.slim.me.camerasample.camera.CameraHelper;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        CameraHelper.getInstance().openCamera();
+        CameraHelper.getInstance().openCamera(CameraHelper.CAMERA_BACK);
         mCameraTexture.setVisibility(View.VISIBLE);
     }
 

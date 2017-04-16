@@ -8,6 +8,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.slim.me.camerasample.camera.CameraHelper;
+
 import java.io.IOException;
 
 /**
@@ -30,7 +32,7 @@ public class SurfaceTextureActivity extends AppCompatActivity implements Surface
     @Override
     protected void onResume() {
         super.onResume();
-        CameraHelper.getInstance().openCamera();
+        CameraHelper.getInstance().openCamera(CameraHelper.CAMERA_BACK);
 
         Camera camera = CameraHelper.getInstance().getCamera();
         if(camera != null) {
