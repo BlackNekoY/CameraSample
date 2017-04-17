@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String TAG = "MainActivity";
     private Button mTakePicture;
+    private Button mChangeCamera;
     private FrameLayout mPreviewParent;
 //    private CameraSurfaceView mCameraSurface;
     private CameraTextureView mCameraTexture;
@@ -41,6 +42,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mTakePicture = (Button) findViewById(R.id.take_picture);
         mTakePicture.setOnClickListener(this);
         mPreviewParent = (FrameLayout) findViewById(R.id.preview_parent);
+        mChangeCamera = (Button) findViewById(R.id.change_camera);
+        mChangeCamera.setOnClickListener(this);
+
+        setupCameraPreviewView();
+    }
+
+    private void setupCameraPreviewView() {
+        mPreviewParent.removeAllViews();
 
         //SurfaceView
 //        mCameraSurface = new CameraSurfaceView(this);
@@ -55,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        CameraHelper.getInstance().openCamera(CameraHelper.CAMERA_BACK);
+        CameraHelper.getInstance().openCamera(CameraHelper.CAMERA_FRONT);
         mCameraTexture.setVisibility(View.VISIBLE);
     }
 
@@ -94,6 +103,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     });
                 }
+                break;
+            case R.id.change_camera:
+
                 break;
         }
     }

@@ -37,6 +37,11 @@ public class CameraHelper {
     private int mPreviewFormat; // 帧数据格式
     private int mDisplayOrientation;
 
+    // 预览size
+    private CustomSize mPreviewSize;
+    // 拍照size
+    private CustomSize mPictureSize;
+
     private CameraHelper() {}
 
     public static CameraHelper getInstance() {
@@ -235,37 +240,6 @@ public class CameraHelper {
     }
 
     /**
-     * TODO 还未完成 请勿使用
-     * 获取合适的PictureSize
-     * @param previewWidth
-     * @param previewHeight
-     * @param screenWidth
-     * @param screenHeight
-     * @return
-     */
-    public CustomSize getPictureSize(int previewWidth, int previewHeight, int screenWidth, int screenHeight) {
-        if(mCamera == null) {
-            Log.e(TAG, "Camera is null, setPictureSize failed.");
-            return null;
-        }
-        Camera.Parameters parameters = getCameraParameters();
-        if(parameters == null) {
-            return null;
-        }
-        // 拿到预览的宽高比
-        int max = Math.max(previewWidth, previewHeight);
-        int min = Math.min(previewWidth, previewHeight);
-        float ratio = (float)max / min;
-
-        // 先找和预览宽高比一致的
-        List<Camera.Size> supportPictureSizes = CameraAbility.getInstance().getPictureSizes();
-        if(supportPictureSizes == null || supportPictureSizes.isEmpty()) {
-            return null;
-        }
-        return null;
-    }
-
-    /**
      * 通过想要的宽高和屏幕宽高，得到最合适的pictureSize和previewSize，只有二者都存在才会返回值，其他返回null
      * @param wantedWidth
      * @param wantedHeight
@@ -329,7 +303,6 @@ public class CameraHelper {
 
         for(Camera.Size size : sizeList) {
             int differPixel = size.width * size.height - targetPixel;
-            // TODO 这里 differPixel == 0何解？
             if(differPixel >= 0) {
                 float pixelDifferWithTarget = (float)differPixel / targetPixel;
                 if(pixelDifferWithTarget > maxDiffer) {
@@ -387,6 +360,56 @@ public class CameraHelper {
         return matchedSizes;
     }
 
+    /**
+     * 设置预览Size
+     */
+    public boolean setPreviewSize(CustomSize size) {
+        if(mCamera == null) {
+            Log.e(TAG, "Camera is null, setPreviewSize failed.");
+            return false;
+        }
+        Camera.Parameters params = getCameraParameters();
+        if(params == null) {
+            Log.e(TAG, "Parameters is null, setPreviewSize failed.");
+            return false;
+        }
+
+        try {
+            params.setPreviewSize(size.width, size.height);
+            mPreviewSize = size;
+            return setCameraParameters(params);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    /**
+     * 设置拍照Size
+     */
+    public boolean setPictureSize(CustomSize size) {
+        if(mCamera == null) {
+            Log.e(TAG, "Camera is null, setPictureSize failed.");
+            return false;
+        }
+        Camera.Parameters params = getCameraParameters();
+        if(params == null) {
+            Log.e(TAG, "Parameters is null, setPictureSize failed.");
+            return false;
+        }
+
+        try {
+            params.setPictureSize(size.width, size.height);
+            mPictureSize = size;
+            return setCameraParameters(params);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
 
     @Nullable
     public Camera getCamera() {
@@ -408,50 +431,11 @@ public class CameraHelper {
             mCamera.release();
             mCamera = null;
             mIsOpened = false;
+            mPreviewSize = null;
+            mPictureSize = null;
         }catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static Camera.Size getFitPreviewSize(Camera camera, int surfaceWidth, int surfaceHeight) {
-        List<Camera.Size> supportPreviewSizes = camera.getParameters().getSupportedPreviewSizes();
-        return getOptimalSize(supportPreviewSizes, surfaceWidth, surfaceHeight);
-    }
-
-    public static Camera.Size getFitPictureSize(Camera camera, int surfaceWidth, int surfaceHeight) {
-        List<Camera.Size> supportPictureSizes = camera.getParameters().getSupportedPictureSizes();
-        return getOptimalSize(supportPictureSizes, surfaceWidth, surfaceHeight);
-    }
-
-    public static Camera.Size getOptimalSize(List<Camera.Size> sizes, int w, int h) {
-
-        final double ASPECT_TOLERANCE = 0.2;
-        double targetRatio = (double) w / h;
-        if (sizes == null)
-            return null;
-        Camera.Size optimalSize = null;
-        double minDiff = Double.MAX_VALUE;
-        int targetHeight = h;
-        for (Camera.Size size : sizes) {
-            double ratio = (double) size.width / size.height;
-            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE)
-                continue;
-            if (Math.abs(size.height - targetHeight) < minDiff) {
-                optimalSize = size;
-                minDiff = Math.abs(size.height - targetHeight);
-            }
-        }
-
-        if (optimalSize == null) {
-            minDiff = Double.MAX_VALUE;
-            for (Camera.Size size : sizes) {
-                if (Math.abs(size.height - targetHeight) < minDiff) {
-                    optimalSize = size;
-                    minDiff = Math.abs(size.height - targetHeight);
-                }
-            }
-        }
-        return optimalSize;
     }
 
     public static class CustomSize {

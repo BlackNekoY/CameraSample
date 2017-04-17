@@ -17,7 +17,7 @@ import java.io.IOException;
  * Created by Slim on 2017/3/19.
  */
 
-public class CameraTextureView extends TextureView implements TextureView.SurfaceTextureListener {
+public class CameraTextureView extends TextureView implements TextureView.SurfaceTextureListener, Camera.PreviewCallback {
 
     private static final String TAG = "CameraTextureView";
 
@@ -75,16 +75,8 @@ public class CameraTextureView extends TextureView implements TextureView.Surfac
         CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
                 UIUtil.getWindowScreenWidth(getContext()), UIUtil.getWindowScreenHeight(getContext()));
         if(sizes != null) {
-            Camera.Parameters param = CameraHelper.getInstance().getCameraParameters();
-            if(param != null) {
-                CameraHelper.CustomSize pictureSize = sizes[0];
-                CameraHelper.CustomSize previewSize = sizes[1];
-
-                param.setPictureSize(pictureSize.width, pictureSize.height);
-                param.setPreviewSize(previewSize.width, previewSize.height);
-
-                CameraHelper.getInstance().setCameraParameters(param);
-            }
+            CameraHelper.getInstance().setPictureSize(sizes[0]);
+            CameraHelper.getInstance().setPreviewSize(sizes[1]);
         }
         CameraHelper.getInstance().setSurfaceTexture(surface);
         CameraHelper.getInstance().startPreview();
@@ -102,4 +94,8 @@ public class CameraTextureView extends TextureView implements TextureView.Surfac
     }
 
 
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+
+    }
 }

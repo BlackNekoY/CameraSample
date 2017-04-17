@@ -9,6 +9,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.slim.me.camerasample.camera.CameraHelper;
+import com.slim.me.camerasample.util.UIUtil;
 
 import java.io.IOException;
 
@@ -44,26 +45,18 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Camera camera = CameraHelper.getInstance().getCamera();
-
-        if (camera != null) {
-            setupCameraParams(camera);
-            try {
-//                camera.setPreviewCallback(this);
-                camera.setPreviewDisplay(holder);
-                camera.startPreview();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        setupCameraParams();
+        CameraHelper.getInstance().setSurfaceHolder(holder);
+        CameraHelper.getInstance().startPreview();
     }
 
-    private void setupCameraParams(Camera camera) {
-        Camera.Parameters param = camera.getParameters();
-        param.setPreviewFormat(ImageFormat.YV12);
-        camera.setDisplayOrientation(90);
-
-        camera.setParameters(param);
+    private void setupCameraParams() {
+        Camera.Parameters param = CameraHelper.getInstance().getCameraParameters();
+        if(param != null) {
+            param.setPreviewFormat(ImageFormat.YV12);
+        }
+        CameraHelper.getInstance().setCameraParameters(param);
+        CameraHelper.getInstance().setDisplayOrientation(90);
     }
 
     @Override
@@ -71,44 +64,30 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
         if (holder.getSurface() == null) {
             return;
         }
-        Camera camera = CameraHelper.getInstance().getCamera();
 
-        if (camera != null) {
-            camera.stopPreview();
+        CameraHelper.getInstance().stopPreview();
+        CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
+                UIUtil.getWindowScreenWidth(getContext()), UIUtil.getWindowScreenHeight(getContext()));
+        if(sizes != null) {
+            Camera.Parameters param = CameraHelper.getInstance().getCameraParameters();
+            if(param != null) {
+                CameraHelper.CustomSize pictureSize = sizes[0];
+                CameraHelper.CustomSize previewSize = sizes[1];
 
-            Camera.Size previewSize = CameraHelper.getFitPreviewSize(camera, width, height);
-            if (previewSize != null) {
-                camera.getParameters().setPreviewSize(previewSize.width, previewSize.height);
-            }
+                param.setPictureSize(pictureSize.width, pictureSize.height);
+                param.setPreviewSize(previewSize.width, previewSize.height);
 
-            Camera.Size pictureSize = CameraHelper.getFitPictureSize(camera, width, height);
-            if(pictureSize != null) {
-                camera.getParameters().setPictureSize(pictureSize.width, pictureSize.height);
-            }
-
-            try {
-//                camera.setPreviewCallback(this);
-                camera.setPreviewDisplay(holder);
-                camera.startPreview();
-            } catch (IOException e) {
-                e.printStackTrace();
+                CameraHelper.getInstance().setCameraParameters(param);
             }
         }
+        CameraHelper.getInstance().setSurfaceHolder(holder);
+        CameraHelper.getInstance().startPreview();
     }
 
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        Camera camera = CameraHelper.getInstance().getCamera();
-        if (camera != null) {
-            camera.setPreviewCallback(null);
-            try {
-                camera.setPreviewDisplay(null);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            camera.stopPreview();
-        }
+        CameraHelper.getInstance().stopPreview();
     }
 
     /**
