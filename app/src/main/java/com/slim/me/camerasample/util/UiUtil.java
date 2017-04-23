@@ -9,11 +9,10 @@ import android.view.WindowManager;
 import java.lang.reflect.Field;
 
 /**
- * Created by slimxu on 2017/4/16.
+ * Created by Slim on 2017/4/23.
  */
 
-public class UIUtil {
-
+public class UiUtil {
     private static final String TAG = "UIUtil";
     public static int sStatusBarHeight = -1;
     public static int sWindowWidth = -1;
@@ -94,3 +93,4 @@ public class UIUtil {
         return sStatusBarHeight = height;
     }
 }
+
