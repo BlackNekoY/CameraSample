@@ -146,6 +146,21 @@ public class CameraHelper {
         return false;
     }
 
+    public boolean setPreViewCallback(Camera.PreviewCallback callback) {
+        if(mCamera == null) {
+            return false;
+        }
+
+        try {
+            mCamera.setPreviewCallback(callback);
+            return true;
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     public boolean startPreview() {
         if(null == mCamera) {
             Log.e(TAG, "Camera is null. refuse startPreview.");

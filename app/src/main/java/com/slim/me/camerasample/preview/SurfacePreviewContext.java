@@ -1,9 +1,9 @@
-package com.slim.me.camerasample;
+package com.slim.me.camerasample.preview;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
-import android.util.AttributeSet;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -11,43 +11,16 @@ import android.view.SurfaceView;
 import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.util.UIUtil;
 
-import java.io.IOException;
-
-
 /**
- * Created by Slim on 2017/3/18.
+ * Created by Slim on 2017/4/23.
  */
 
-public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
+public class SurfacePreviewContext extends PreviewContext implements SurfaceHolder.Callback, Camera.PreviewCallback {
 
-    public static final String TAG = "CameraPreviewView";
+    public static final String TAG = "SurfacePreviewContext";
 
-    private SurfaceHolder mHolder;
-
-    public CameraSurfaceView(Context context) {
-        this(context, null);
-    }
-
-    public CameraSurfaceView(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-    public CameraSurfaceView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init();
-    }
-
-    private void init() {
-        mHolder = getHolder();
-        mHolder.addCallback(this);
-        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-    }
-
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        setupCameraParams();
-        CameraHelper.getInstance().setSurfaceHolder(holder);
-        CameraHelper.getInstance().startPreview();
+    public SurfacePreviewContext(@NonNull Context context) {
+        super(context);
     }
 
     private void setupCameraParams() {
@@ -60,14 +33,26 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
     }
 
     @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        Log.d(TAG, "surfaceCreated");
+        CameraHelper.getInstance().openCamera(CameraHelper.CAMERA_BACK);
+
+        setupCameraParams();
+        CameraHelper.getInstance().setSurfaceHolder(holder);
+        CameraHelper.getInstance().setPreViewCallback(this);
+        CameraHelper.getInstance().startPreview();
+    }
+
+    @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        Log.d(TAG, "surfaceChanged");
         if (holder.getSurface() == null) {
             return;
         }
 
         CameraHelper.getInstance().stopPreview();
         CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
-                UIUtil.getWindowScreenWidth(getContext()), UIUtil.getWindowScreenHeight(getContext()));
+                UIUtil.getWindowScreenWidth(context), UIUtil.getWindowScreenHeight(context));
         if(sizes != null) {
             Camera.Parameters param = CameraHelper.getInstance().getCameraParameters();
             if(param != null) {
@@ -81,22 +66,19 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
             }
         }
         CameraHelper.getInstance().setSurfaceHolder(holder);
+        CameraHelper.getInstance().setPreViewCallback(this);
         CameraHelper.getInstance().startPreview();
     }
 
-
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        Log.d(TAG, "surfaceDestroyed");
         CameraHelper.getInstance().stopPreview();
+        CameraHelper.getInstance().releaseCamera();
     }
 
-    /**
-     * 相机的每一帧数据
-     */
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-        // 这里的数据是NV21 或者 YV12格式，需要转换为I420
-        Log.d(TAG, "onPreviewFrame, data length:" + data.length);
+        getPreviewFrame(data);
     }
-
 }

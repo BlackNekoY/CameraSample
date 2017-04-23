@@ -3,6 +3,7 @@ package com.slim.me.camerasample;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
+import android.os.Build;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,6 +15,12 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 
 import com.slim.me.camerasample.camera.CameraHelper;
+import com.slim.me.camerasample.preview.CameraSurfaceView;
+import com.slim.me.camerasample.preview.CameraTextureView;
+import com.slim.me.camerasample.preview.PreviewContext;
+import com.slim.me.camerasample.preview.SurfacePreviewContext;
+import com.slim.me.camerasample.preview.TexturePreviewContext;
+import com.slim.me.camerasample.util.BitmapUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,10 +30,13 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "MainActivity";
+    private static final boolean USE_SURFACE_PREVIEW = false;
+
+    private View mCameraPreviewView;
     private Button mTakePicture;
     private FrameLayout mPreviewParent;
-//    private CameraSurfaceView mCameraSurface;
-    private CameraTextureView mCameraTexture;
+
+    private PreviewContext mPreviewContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,29 +58,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void setupCameraPreviewView() {
         mPreviewParent.removeAllViews();
 
-        //SurfaceView
-//        mCameraSurface = new CameraSurfaceView(this);
-//        mPreviewParent.addView(mCameraSurface, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+        if(Build.VERSION.SDK_INT >= 19 && !USE_SURFACE_PREVIEW) {
+            TexturePreviewContext previewContext = new TexturePreviewContext(this);
+            CameraTextureView textureView = new CameraTextureView(this);
 
-        //TextureView
-        mCameraTexture = new CameraTextureView(this);
-        mPreviewParent.addView(mCameraTexture, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+            textureView.setPreviewContext(previewContext);
+
+            mPreviewContext = previewContext;
+            mCameraPreviewView = textureView;
+        }else {
+            SurfacePreviewContext previewContext = new SurfacePreviewContext(this);
+            CameraSurfaceView surfaceView = new CameraSurfaceView(this);
+
+            surfaceView.setPreviewContext(previewContext);
+
+            mPreviewContext = previewContext;
+            mCameraPreviewView = surfaceView;
+        }
+
+        mPreviewParent.addView(mCameraPreviewView, 1, 1);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        CameraHelper.getInstance().openCamera(CameraHelper.CAMERA_FRONT);
-        mCameraTexture.setVisibility(View.VISIBLE);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause");
-        mCameraTexture.setVisibility(View.INVISIBLE);
-        CameraHelper.getInstance().releaseCamera();
     }
 
     @Override

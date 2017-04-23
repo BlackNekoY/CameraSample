@@ -1,4 +1,4 @@
-package com.slim.me.camerasample;
+package com.slim.me.camerasample.util;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;

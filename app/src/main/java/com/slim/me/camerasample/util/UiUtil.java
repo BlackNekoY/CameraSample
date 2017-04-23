@@ -12,7 +12,7 @@ import java.lang.reflect.Field;
  * Created by Slim on 2017/4/23.
  */
 
-public class UiUtil {
+public class UIUtil {
     private static final String TAG = "UIUtil";
     public static int sStatusBarHeight = -1;
     public static int sWindowWidth = -1;

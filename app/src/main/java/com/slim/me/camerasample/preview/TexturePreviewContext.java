@@ -1,41 +1,26 @@
-package com.slim.me.camerasample;
+package com.slim.me.camerasample.preview;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.util.AttributeSet;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.TextureView;
 
 import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.util.UIUtil;
 
-import java.io.IOException;
-
 /**
- * Created by Slim on 2017/3/19.
+ * Created by Slim on 2017/4/23.
  */
 
-public class CameraTextureView extends TextureView implements TextureView.SurfaceTextureListener, Camera.PreviewCallback {
+public class TexturePreviewContext extends PreviewContext implements TextureView.SurfaceTextureListener, Camera.PreviewCallback {
 
-    private static final String TAG = "CameraTextureView";
+    public static final String TAG = "TexturePreviewContext";
 
-    public CameraTextureView(Context context) {
-        this(context, null);
-    }
-
-    public CameraTextureView(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-    public CameraTextureView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init();
-    }
-
-    private void init() {
-        setSurfaceTextureListener(this);
+    public TexturePreviewContext(@NonNull Context context) {
+        super(context);
     }
 
     private void setupCameraParams(int width, int height) {
@@ -45,7 +30,7 @@ public class CameraTextureView extends TextureView implements TextureView.Surfac
 
             CameraHelper.getInstance().stopPreview();
             CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
-                    UIUtil.getWindowScreenWidth(getContext()), UIUtil.getWindowScreenHeight(getContext()));
+                    UIUtil.getWindowScreenWidth(context), UIUtil.getWindowScreenHeight(context));
             if(sizes != null) {
                 CameraHelper.CustomSize pictureSize = sizes[0];
                 CameraHelper.CustomSize previewSize = sizes[1];
@@ -58,22 +43,22 @@ public class CameraTextureView extends TextureView implements TextureView.Surfac
         CameraHelper.getInstance().setDisplayOrientation(90);
     }
 
-
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         Log.d(TAG, "onSurfaceTextureAvailable");
+        CameraHelper.getInstance().openCamera(CameraHelper.CAMERA_BACK);
         setupCameraParams(width, height);
         CameraHelper.getInstance().setSurfaceTexture(surface);
+        CameraHelper.getInstance().setPreViewCallback(this);
         CameraHelper.getInstance().startPreview();
     }
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
         Log.d(TAG, "onSurfaceTextureSizeChanged");
-
         CameraHelper.getInstance().stopPreview();
         CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
-                UIUtil.getWindowScreenWidth(getContext()), UIUtil.getWindowScreenHeight(getContext()));
+                UIUtil.getWindowScreenWidth(context), UIUtil.getWindowScreenHeight(context));
         if(sizes != null) {
             CameraHelper.getInstance().setPictureSize(sizes[0]);
             CameraHelper.getInstance().setPreviewSize(sizes[1]);
@@ -84,7 +69,9 @@ public class CameraTextureView extends TextureView implements TextureView.Surfac
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+        Log.d(TAG, "onSurfaceTextureDestroyed");
         CameraHelper.getInstance().stopPreview();
+        CameraHelper.getInstance().releaseCamera();
         return false;
     }
 
@@ -93,9 +80,8 @@ public class CameraTextureView extends TextureView implements TextureView.Surfac
         Log.d(TAG, "onSurfaceTextureUpdated");
     }
 
-
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-
+        getPreviewFrame(data);
     }
 }
