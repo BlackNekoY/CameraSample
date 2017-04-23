@@ -14,12 +14,31 @@
 
     </FrameLayout>
 
-    <Button
-        android:id="@+id/take_picture"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:text="拍照"/>
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        android:layout_alignParentBottom="true">
+
+        <Button
+            android:id="@+id/take_picture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="拍照"/>
+
+        <Button
+            android:id="@+id/shoot_video"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="录制"/>
+
+        <Button
+            android:id="@+id/stop_shoot_video"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="停止"/>
+    </LinearLayout>
+
 
 </RelativeLayout>
