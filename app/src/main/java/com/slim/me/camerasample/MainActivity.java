@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private View mCameraPreviewView;
     private Button mTakePicture;
+    private Button mChangeCamera;
     private FrameLayout mPreviewParent;
 
     private PreviewContext mPreviewContext;
@@ -51,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mTakePicture = (Button) findViewById(R.id.take_picture);
         mTakePicture.setOnClickListener(this);
         mPreviewParent = (FrameLayout) findViewById(R.id.preview_parent);
+        mChangeCamera = (Button) findViewById(R.id.change_camera);
+        mChangeCamera.setOnClickListener(this);
 
         setupCameraPreviewView();
     }
@@ -76,7 +79,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mCameraPreviewView = surfaceView;
         }
 
-        mPreviewParent.addView(mCameraPreviewView, 1, 1);
+        mPreviewParent.addView(mCameraPreviewView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+//        mPreviewParent.addView(mCameraPreviewView, 0, 0);
     }
 
     @Override
@@ -118,6 +122,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     });
                 }
+                break;
+            case R.id.change_camera:
                 break;
         }
     }
