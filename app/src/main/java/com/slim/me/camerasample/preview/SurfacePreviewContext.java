@@ -39,7 +39,7 @@ public class SurfacePreviewContext extends PreviewContext implements SurfaceHold
 
         setupCameraParams();
         CameraHelper.getInstance().setSurfaceHolder(holder);
-        CameraHelper.getInstance().setPreViewCallback(this);
+        CameraHelper.getInstance().setPreViewCallback(this, false);
         CameraHelper.getInstance().startPreview();
     }
 
@@ -66,7 +66,7 @@ public class SurfacePreviewContext extends PreviewContext implements SurfaceHold
             }
         }
         CameraHelper.getInstance().setSurfaceHolder(holder);
-        CameraHelper.getInstance().setPreViewCallback(this);
+        CameraHelper.getInstance().setPreViewCallback(this, false);
         CameraHelper.getInstance().startPreview();
     }
 

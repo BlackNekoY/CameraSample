@@ -37,10 +37,11 @@ public class CameraHelper {
     private int mPreviewFormat; // 帧数据格式
     private int mDisplayOrientation;
 
-    // 预览size
     private CustomSize mPreviewSize;
-    // 拍照size
     private CustomSize mPictureSize;
+
+    private byte[] USER_BUFFER_1;
+    private byte[] USER_BUFFER_2;
 
     private CameraHelper() {}
 
@@ -146,13 +147,20 @@ public class CameraHelper {
         return false;
     }
 
-    public boolean setPreViewCallback(Camera.PreviewCallback callback) {
+    public boolean setPreViewCallback(Camera.PreviewCallback callback, boolean useBuffer) {
         if(mCamera == null) {
             return false;
         }
 
         try {
-            mCamera.setPreviewCallback(callback);
+            if(useBuffer) {
+                makeSureBuffer();
+                mCamera.addCallbackBuffer(USER_BUFFER_1);
+                mCamera.addCallbackBuffer(USER_BUFFER_2);
+                mCamera.setPreviewCallbackWithBuffer(callback);
+            }else {
+                mCamera.setPreviewCallback(callback);
+            }
             return true;
         }catch (Exception e) {
             e.printStackTrace();
@@ -160,6 +168,35 @@ public class CameraHelper {
 
         return false;
     }
+
+    private void makeSureBuffer() {
+        Camera.Size previewSize = mCamera.getParameters().getPreviewSize();
+
+        // 1*Y + 1/4 * U + 1/4 * V = 3/2
+        int bufferSize = previewSize.width * previewSize.height * 3 / 2;
+
+        if(USER_BUFFER_1 == null || USER_BUFFER_1.length != bufferSize) {
+            USER_BUFFER_1 = new byte[bufferSize];
+        }
+        if(USER_BUFFER_2 == null || USER_BUFFER_2.length != bufferSize) {
+            USER_BUFFER_2 = new byte[bufferSize];
+        }
+    }
+
+    public boolean addUserBufferRecycle(byte[] buffer) {
+        if(mCamera == null) {
+            return false;
+        }
+
+        try {
+            mCamera.addCallbackBuffer(buffer);
+            return true;
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 
     public boolean startPreview() {
         if(null == mCamera) {
@@ -182,6 +219,9 @@ public class CameraHelper {
         return false;
     }
 
+    /**
+     * stopPreview，will clear PreviewDisplay & PreviewCallback
+     */
     public boolean stopPreview() {
         if(mCamera == null) {
             Log.e(TAG, "Camera is null. refuse stopPreview");
@@ -194,9 +234,13 @@ public class CameraHelper {
 
         try {
             mCamera.stopPreview();
+            /**
+             * You have to unset preview callback before camera.release(), after camera.stopPreview()
+             * otherwise it might throw RuntimeException : use camera after called camera.release()
+             */
+            mCamera.setPreviewCallback(null);
             mCamera.setPreviewDisplay(null);
             mCamera.setPreviewTexture(null);
-            mCamera.setPreviewCallback(null);
             mIsPreviewing = false;
             return true;
         }catch (Exception e) {
@@ -253,6 +297,34 @@ public class CameraHelper {
         }
         return false;
     }
+
+    public boolean setPreviewFormat(int format) {
+        if(mCamera == null) {
+            Log.e(TAG, "Camera is null, setImageFormat failed.");
+            return false;
+        }
+
+        if(!CameraAbility.getInstance().isSupportPreviewFormat(format)) {
+            Log.e(TAG, "format:" + format + " is not supportPreviewFormat.");
+            return false;
+        }
+
+        try {
+            Camera.Parameters parameters = getCameraParameters();
+            if(parameters != null) {
+                parameters.setPreviewFormat(format);
+                boolean result = setCameraParameters(parameters);
+                if(result) {
+                    mPreviewFormat = format;
+                    return true;
+                }
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 
     /**
      * 通过想要的宽高和屏幕宽高，得到最合适的pictureSize和previewSize，只有二者都存在才会返回值，其他返回null
@@ -391,8 +463,11 @@ public class CameraHelper {
 
         try {
             params.setPreviewSize(size.width, size.height);
-            mPreviewSize = size;
-            return setCameraParameters(params);
+            boolean result = setCameraParameters(params);
+            if(result) {
+                mPreviewSize = size;
+                return true;
+            }
         }catch (Exception e) {
             e.printStackTrace();
         }
@@ -417,7 +492,11 @@ public class CameraHelper {
         try {
             params.setPictureSize(size.width, size.height);
             mPictureSize = size;
-            return setCameraParameters(params);
+            boolean result = setCameraParameters(params);
+            if(result) {
+                mPictureSize = size;
+                return true;
+            }
         }catch (Exception e) {
             e.printStackTrace();
         }
@@ -448,6 +527,7 @@ public class CameraHelper {
             mIsOpened = false;
             mPreviewSize = null;
             mPictureSize = null;
+            mDisplayOrientation = 0;
         }catch (Exception e) {
             e.printStackTrace();
         }
