@@ -10,7 +10,9 @@ import android.util.Log;
 import java.util.List;
 
 /**
- * Check Camera Ability.
+ * 检查系统Camera提供的基本能力，通过{@link #bindCamera(Camera)}获取到Parameters <br/>
+ * 由于Camera.getParameters 每次会新建一个实例返回，所以这个类的Parameters很可能不是最新的实例 <br/>
+ * 这个类只提供一些基本的能力检查，比如是否提供auto focus，support size等，这些属性都不会随着对象的改变而改变 <br/>
  */
 public class CameraAbility {
 
