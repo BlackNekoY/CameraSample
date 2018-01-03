@@ -9,7 +9,7 @@ import android.util.Log;
 import android.view.TextureView;
 
 import com.slim.me.camerasample.camera.CameraHelper;
-import com.slim.me.camerasample.util.UIUtil;
+import com.slim.me.camerasample.util.UiUtil;
 
 /**
  * Created by Slim on 2017/4/23.
@@ -25,7 +25,7 @@ public class TexturePreviewContext extends PreviewContext implements TextureView
 
     private void setupCameraParams(int width, int height) {
         CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
-                UIUtil.getWindowScreenWidth(context), UIUtil.getWindowScreenHeight(context));
+                UiUtil.getWindowScreenWidth(context), UiUtil.getWindowScreenHeight(context));
         if(sizes != null) {
             CameraHelper.getInstance().setPictureSize(sizes[0]);
             CameraHelper.getInstance().setPreviewSize(sizes[1]);
@@ -51,7 +51,7 @@ public class TexturePreviewContext extends PreviewContext implements TextureView
         Log.d(TAG, "onSurfaceTextureSizeChanged");
         CameraHelper.getInstance().stopPreview();
         CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
-                UIUtil.getWindowScreenWidth(context), UIUtil.getWindowScreenHeight(context));
+                UiUtil.getWindowScreenWidth(context), UiUtil.getWindowScreenHeight(context));
         if(sizes != null) {
             CameraHelper.getInstance().setPictureSize(sizes[0]);
             CameraHelper.getInstance().setPreviewSize(sizes[1]);

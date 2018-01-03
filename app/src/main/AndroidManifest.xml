@@ -18,8 +18,10 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".SurfaceTextureActivity">
-        </activity>
+        <activity android:name=".SurfaceTextureActivity"/>
+        <activity android:name=".preview.CameraPreviewActivity"/>
+        <activity android:name=".eglsurface.EGLSurfaceActivity"/>
+        <activity android:name=".encode_mux.EncodeAndMuxActivity"/>
     </application>
 
 </manifest>
