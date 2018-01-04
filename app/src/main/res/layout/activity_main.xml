@@ -24,5 +24,11 @@
         android:layout_height="wrap_content"
         android:text="encode_mux"
         android:onClick="gotoEncodeAndMuxActivity"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="camera_mpeg"
+        android:onClick="gotoEncodeAndMuxActivity"/>
+
 
 </LinearLayout>

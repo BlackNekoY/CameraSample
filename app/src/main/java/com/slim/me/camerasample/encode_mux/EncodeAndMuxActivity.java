@@ -16,7 +16,7 @@ public class EncodeAndMuxActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_encode_and_mux);
 
-        EncodeAndMuxTest test = new EncodeAndMuxTest();
-        test.testEncodeVideoToMp4();
+        EncodeAndMux mux = new EncodeAndMux();
+        mux.startEncodeMp4();
     }
 }
