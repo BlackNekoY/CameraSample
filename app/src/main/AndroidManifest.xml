@@ -20,6 +20,8 @@
 
         <activity android:name=".SurfaceTextureActivity">
         </activity>
+
+        <activity android:name=".MediaCodecActivity"/>
     </application>
 
 </manifest>
