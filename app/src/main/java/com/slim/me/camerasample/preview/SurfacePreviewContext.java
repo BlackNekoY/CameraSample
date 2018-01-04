@@ -9,7 +9,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.slim.me.camerasample.camera.CameraHelper;
-import com.slim.me.camerasample.util.UIUtil;
+import com.slim.me.camerasample.util.UiUtil;
 
 /**
  * Created by Slim on 2017/4/23.
@@ -52,7 +52,7 @@ public class SurfacePreviewContext extends PreviewContext implements SurfaceHold
 
         CameraHelper.getInstance().stopPreview();
         CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
-                UIUtil.getWindowScreenWidth(context), UIUtil.getWindowScreenHeight(context));
+                UiUtil.getWindowScreenWidth(context), UiUtil.getWindowScreenHeight(context));
         if(sizes != null) {
             Camera.Parameters param = CameraHelper.getInstance().getCameraParameters();
             if(param != null) {
