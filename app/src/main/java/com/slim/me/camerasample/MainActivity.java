@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import com.slim.me.camerasample.camera_mpeg.CameraToMpegActivity;
 import com.slim.me.camerasample.encode_mux.EncodeAndMuxActivity;
 import com.slim.me.camerasample.preview.CameraPreviewActivity;
 import com.slim.me.camerasample.eglsurface.EGLSurfaceActivity;
@@ -31,6 +32,11 @@ public class MainActivity extends AppCompatActivity  {
 
     public void gotoEncodeAndMuxActivity(View view) {
         Intent intent = new Intent(this, EncodeAndMuxActivity.class);
+        startActivity(intent);
+    }
+
+    public void gotoCameraMpegActivity(View view) {
+        Intent intent = new Intent(this, CameraToMpegActivity.class);
         startActivity(intent);
     }
 }

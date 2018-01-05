@@ -209,6 +209,8 @@ public class CameraToMpegTest extends AndroidTestCase {
 
             // send end-of-stream to encoder, and drain remaining output
             drainEncoder(true);
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             // release everything we grabbed
             releaseCamera();
