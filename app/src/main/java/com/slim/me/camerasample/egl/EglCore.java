@@ -10,6 +10,7 @@ import android.util.Log;
 
 /**
  * 管理EGLContext,EGLDisplay,EGLConfig
+ * 还提供了各种操作EGLSurface的方法
  * Created by slimxu on 2018/1/4.
  */
 
