@@ -23,9 +23,6 @@
         <activity android:name=".eglsurface.EGLSurfaceActivity"/>
         <activity android:name=".encode_mux.EncodeAndMuxActivity"/>
         <activity android:name=".camera_mpeg.CameraToMpegActivity"/>
-        <activity android:name=".SurfaceTextureActivity">
-        </activity>
-
         <activity android:name=".MediaCodecActivity"/>
     </application>
 
