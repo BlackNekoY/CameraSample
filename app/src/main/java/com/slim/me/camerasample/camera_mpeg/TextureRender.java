@@ -54,10 +54,8 @@ public class TextureRender {
                     "}\n";
 
     private float[] mMVPMatrix = new float[16];
-    private float[] mSTMatrix = new float[16];
 
     private int mProgram;
-    private int mTextureID = -12345;
     private int muMVPMatrixHandle;
     private int muSTMatrixHandle;
     private int maPositionHandle;
@@ -69,16 +67,11 @@ public class TextureRender {
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         mTriangleVertices.put(mTriangleVerticesData).position(0);
 
-        Matrix.setIdentityM(mSTMatrix, 0);
+        surfaceCreated();
     }
 
-    public int getTextureId() {
-        return mTextureID;
-    }
-
-    public void drawFrame(SurfaceTexture st) {
+    public void drawFrame(int textureId, float[] stMatrix) {
         GlUtil.checkGlError("onDrawFrame start");
-        st.getTransformMatrix(mSTMatrix);
 
         // (optional) clear to green so we can see if we're failing to set pixels
         GLES20.glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
@@ -88,7 +81,7 @@ public class TextureRender {
         GlUtil.checkGlError("glUseProgram");
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mTextureID);
+        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
 
         mTriangleVertices.position(TRIANGLE_VERTICES_DATA_POS_OFFSET);
         GLES20.glVertexAttribPointer(maPositionHandle, 3, GLES20.GL_FLOAT, false,
@@ -106,7 +99,7 @@ public class TextureRender {
 
         Matrix.setIdentityM(mMVPMatrix, 0);
         GLES20.glUniformMatrix4fv(muMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-        GLES20.glUniformMatrix4fv(muSTMatrixHandle, 1, false, mSTMatrix, 0);
+        GLES20.glUniformMatrix4fv(muSTMatrixHandle, 1, false, stMatrix, 0);
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GlUtil.checkGlError("glDrawArrays");
