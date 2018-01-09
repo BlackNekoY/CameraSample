@@ -8,7 +8,6 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.Surface;
 
-import com.slim.me.camerasample.egl.EglSurfaceBase;
 
 import java.io.File;
 import java.io.IOException;
