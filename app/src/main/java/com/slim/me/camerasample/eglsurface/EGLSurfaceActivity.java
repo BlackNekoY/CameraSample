@@ -10,6 +10,7 @@ import android.view.SurfaceView;
 import com.slim.me.camerasample.R;
 
 /**
+ * 使用SurfaceView + 自配EGL环境example
  * Created by slimxu on 2018/1/3.
  */
 

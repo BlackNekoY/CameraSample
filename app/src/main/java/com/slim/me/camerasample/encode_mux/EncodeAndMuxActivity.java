@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.slim.me.camerasample.R;
 
 /**
+ * 自配EGL环境 + MediaCodec录制example
  * Created by slimxu on 2018/1/3.
  */
 

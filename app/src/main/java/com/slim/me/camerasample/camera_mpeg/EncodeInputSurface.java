@@ -28,8 +28,8 @@ public class EncodeInputSurface {
     /**
      * Render使用OpenGL画在EglSurface中, 自动swapBuffer
      */
-    public void draw(SurfaceTexture surfaceTexture, long timestampNanos) {
-        mRender.drawFrame(surfaceTexture);
+    public void draw(int textureId, float[] stMatrix, long timestampNanos) {
+        mRender.drawFrame(textureId, stMatrix);
         mEglSurface.setPresentationTime(timestampNanos);
         mEglSurface.swapBuffers();
     }

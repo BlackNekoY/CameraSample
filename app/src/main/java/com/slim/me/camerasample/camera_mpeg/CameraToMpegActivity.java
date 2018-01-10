@@ -9,8 +9,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import com.slim.me.camerasample.R;
-import com.slim.me.camerasample.preview.CameraSurfaceView;
-import com.slim.me.camerasample.preview.SurfacePreviewContext;
+import com.slim.me.camerasample.preview.CameraGLSurfaceView;
 
 /**
  * Created by slimxu on 2018/1/3.
@@ -19,8 +18,7 @@ import com.slim.me.camerasample.preview.SurfacePreviewContext;
 public class CameraToMpegActivity extends AppCompatActivity {
 
     private FrameLayout mPreviewParent;
-    private SurfacePreviewContext mPreviewContext;
-    private CameraSurfaceView mCameraPreviewView;
+    private CameraGLSurfaceView mCameraPreviewView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -36,15 +34,7 @@ public class CameraToMpegActivity extends AppCompatActivity {
 
     private void setupCameraPreviewView() {
         mPreviewParent.removeAllViews();
-
-        SurfacePreviewContext previewContext = new CameraMpegPreviewContext(this);
-        CameraSurfaceView textureView = new CameraSurfaceView(this);
-
-        textureView.setPreviewContext(previewContext);
-
-        mPreviewContext = previewContext;
-        mCameraPreviewView = textureView;
-
+        mCameraPreviewView = new CameraGLSurfaceView(this);
         mPreviewParent.addView(mCameraPreviewView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
     }
 }
