@@ -9,6 +9,7 @@ import android.opengl.GLSurfaceView;
 
 import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.egl.VideoEncoder;
+import com.slim.me.camerasample.encoder.EncodeConfig;
 import com.slim.me.camerasample.util.GlUtil;
 import com.slim.me.camerasample.util.UiUtil;
 
@@ -21,12 +22,21 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
 
+    public static final String TAG = "GLSurfaceViewRender";
+
+    private static final int RECORDING_OFF = 0;
+    private static final int RECORDING_ON = 1;
+
+
     private CameraGLSurfaceView mCameraSurfaceView;
 
     private int mTextureId;
     private SurfaceTexture mSurfaceTexture;
 
     private CameraRecorder mRecorder;
+    private EncodeConfig mEncodeConfig;
+    private int mRecordingState = RECORDING_OFF;
+    private boolean mRecordingEnabled = false;
 
     private final float[] mSTMatrix = new float[16];
 
@@ -34,6 +44,10 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
     public GLSurfaceViewRender(CameraGLSurfaceView cameraSurfaceView) {
         mCameraSurfaceView = cameraSurfaceView;
         mRecorder = new CameraRecorder();
+    }
+
+    public void setEncodeConfig(EncodeConfig encodeConfig) {
+        mEncodeConfig = encodeConfig;
     }
 
     @Override
@@ -76,7 +90,31 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
         mSurfaceTexture.updateTexImage();
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
-//        mInputSurface.draw(mTextureId, mSTMatrix, mSurfaceTexture.getTimestamp());
+
+        onVideoDrawFrame(mTextureId, mSTMatrix, mSurfaceTexture.getTimestamp());
+    }
+
+    private void onVideoDrawFrame(int textureId, float[] stMatrix, long timestampNanos) {
+        if(mRecordingEnabled && mEncodeConfig != null) {
+            switch (mRecordingState){
+                case RECORDING_OFF:
+                    mRecorder.startRecord(mEncodeConfig);
+                    mRecordingState = RECORDING_ON;
+                    break;
+                case RECORDING_ON:
+                    break;
+            }
+            mRecorder.onFrameAvailable(textureId, stMatrix, timestampNanos);
+        } else {
+            switch (mRecordingState) {
+                case RECORDING_OFF:
+                    break;
+                case RECORDING_ON:
+                    mRecorder.stopRecord();
+                    mRecordingState = RECORDING_OFF;
+                    break;
+            }
+        }
     }
 
     private void setupCameraParams() {

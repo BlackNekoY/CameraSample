@@ -6,6 +6,8 @@ import com.slim.me.camerasample.egl.EglSurfaceBase;
 import com.slim.me.camerasample.egl.VideoEncoder;
 import com.slim.me.camerasample.encoder.EncodeConfig;
 
+import java.io.IOException;
+
 /**
  * Created by slimxu on 2018/1/4.
  */
@@ -24,7 +26,7 @@ public class EncodeAndMux {
     private int mWidth = 320;
     private int mHeight = 240;
 
-    public void startEncodeMp4() {
+    public void startEncodeMp4() throws IOException {
         mEncodeConfig = new EncodeConfig(null, mWidth, mHeight, 0, 0, 0, 0);
         mVideoEncoder = new VideoEncoder();
         mVideoEncoder.start(mEncodeConfig);

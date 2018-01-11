@@ -41,7 +41,7 @@ public class VideoEncoder {
     private int mBitRate = 2000000;
     private String mOutputPath;
 
-    public void start(EncodeConfig encodeConfig) {
+    public void start(EncodeConfig encodeConfig) throws IOException {
         mWidth = encodeConfig.width;
         mHeight = encodeConfig.height;
 
@@ -55,11 +55,7 @@ public class VideoEncoder {
         format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
 
         // 创建MediaCodec
-        try {
-            mEncoder = MediaCodec.createEncoderByType(MIME_TYPE);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        mEncoder = MediaCodec.createEncoderByType(MIME_TYPE);
 
         // configure
         mEncoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);

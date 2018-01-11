@@ -26,11 +26,6 @@ public class EncodeInputSurface {
         mRender = new TextureRender();
     }
 
-
-    public void surfaceCreate() {
-        mRender.surfaceCreated();
-    }
-
     /**
      * Render使用OpenGL画在EglSurface中, 自动swapBuffer
      * 此方法运行在GLSurfaceView的GL线程中

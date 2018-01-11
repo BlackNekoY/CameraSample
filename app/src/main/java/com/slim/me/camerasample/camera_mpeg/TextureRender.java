@@ -1,6 +1,5 @@
 package com.slim.me.camerasample.camera_mpeg;
 
-import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
@@ -66,6 +65,8 @@ public class TextureRender {
                 mTriangleVerticesData.length * FLOAT_SIZE_BYTES)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         mTriangleVertices.put(mTriangleVerticesData).position(0);
+
+        createProgram();
     }
 
     public void drawFrame(int textureId, float[] stMatrix) {
@@ -112,7 +113,7 @@ public class TextureRender {
     /**
      * Initializes GL state.  Call this after the EGL surface has been created and made current.
      */
-    public void surfaceCreated() {
+    public void createProgram() {
         mProgram = GlUtil.createProgram(VERTEX_SHADER, FRAGMENT_SHADER);
         if (mProgram == 0) {
             throw new RuntimeException("failed creating program");

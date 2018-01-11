@@ -34,7 +34,7 @@ public class SurfacePreviewContext extends PreviewContext implements SurfaceHold
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.d(TAG, "surfaceCreated");
+        Log.d(TAG, "createProgram");
         CameraHelper.getInstance().openCamera(CameraHelper.CAMERA_BACK);
 
         setupCameraParams();

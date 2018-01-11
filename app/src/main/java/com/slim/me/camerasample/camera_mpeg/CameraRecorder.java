@@ -8,6 +8,8 @@ import android.os.Message;
 import com.slim.me.camerasample.egl.VideoEncoder;
 import com.slim.me.camerasample.encoder.EncodeConfig;
 
+import java.io.IOException;
+
 /**
  * Created by slimxu on 2018/1/8.
  */
@@ -23,6 +25,8 @@ public class CameraRecorder {
 
     private HandlerThread mRecordThread;
     private RecordHandler mRecordHandler;
+
+    private volatile boolean mIsRecording = false;
 
     public CameraRecorder() {
         mRecordThread = new HandlerThread("recode_thread");
@@ -40,9 +44,14 @@ public class CameraRecorder {
         mRecordHandler.sendMessage(msg);
     }
 
-    public void onFrameAvailable() {
+    public void onFrameAvailable(int textureId, float[] stMatrix, long timestamp) {
         Message msg = Message.obtain();
         msg.what = MSG_ON_FRAME_AVAILABLE;
+        Object[] args = new Object[3];
+        args[0] = textureId;
+        args[1] = stMatrix;
+        args[2] = timestamp;
+        msg.obj = args;
         mRecordHandler.sendMessage(msg);
     }
 
@@ -53,12 +62,26 @@ public class CameraRecorder {
     }
 
     private void handleStartRecord(EncodeConfig encodeConfig) {
-        mEncoder.start(encodeConfig);
-        mInputSurface.init(mEncoder.getInputSurface());
+        if(mIsRecording) {
+            handleStopRecord();
+        }
+        mIsRecording = true;
+        try {
+            mEncoder.start(encodeConfig);
+            mInputSurface.init(mEncoder.getInputSurface());
+        } catch (IOException e) {
+            mIsRecording = false;
+            return;
+        }
     }
 
-    private void handleOnFrameAvailable(){}
-    private void handleStopRecord(){}
+    private void handleOnFrameAvailable(int textureId, float[] stMatrix, long timestampNanos){
+        mEncoder.frameAvaliable();
+        mInputSurface.draw(textureId, stMatrix, timestampNanos);
+    }
+    private void handleStopRecord(){
+        mEncoder.stop();
+    }
 
 
     private class RecordHandler extends Handler {
@@ -75,7 +98,8 @@ public class CameraRecorder {
                     handleStartRecord(config);
                     break;
                 case MSG_ON_FRAME_AVAILABLE:
-                    handleOnFrameAvailable();
+                    Object[] args = (Object[]) msg.obj;
+                    handleOnFrameAvailable((int) args[0], (float[])args[1], (long)args[2]);
                     break;
                 case MSG_STOP_RECORD:
                     handleStopRecord();

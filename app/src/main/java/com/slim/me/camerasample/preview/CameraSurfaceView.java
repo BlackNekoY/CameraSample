@@ -53,7 +53,7 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.d(TAG, "surfaceCreated");
+        Log.d(TAG, "createProgram");
         if(mPreviewContext != null) {
             mPreviewContext.surfaceCreated(holder);
         }
