@@ -1,6 +1,5 @@
 package com.slim.me.camerasample.camera_mpeg;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -9,7 +8,6 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import com.slim.me.camerasample.R;
-import com.slim.me.camerasample.preview.CameraGLSurfaceView;
 
 /**
  * Created by slimxu on 2018/1/3.

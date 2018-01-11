@@ -1,4 +1,4 @@
-package com.slim.me.camerasample.preview;
+package com.slim.me.camerasample.camera_mpeg;
 
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
@@ -8,7 +8,7 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 
 import com.slim.me.camerasample.camera.CameraHelper;
-import com.slim.me.camerasample.camera_mpeg.TextureRender;
+import com.slim.me.camerasample.egl.VideoEncoder;
 import com.slim.me.camerasample.util.GlUtil;
 import com.slim.me.camerasample.util.UiUtil;
 
@@ -25,14 +25,15 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
 
     private int mTextureId;
     private SurfaceTexture mSurfaceTexture;
-    private TextureRender mTextureRender;
+
+    private CameraRecorder mRecorder;
 
     private final float[] mSTMatrix = new float[16];
 
 
     public GLSurfaceViewRender(CameraGLSurfaceView cameraSurfaceView) {
         mCameraSurfaceView = cameraSurfaceView;
-        mTextureRender = new TextureRender();
+        mRecorder = new CameraRecorder();
     }
 
     @Override
@@ -46,6 +47,7 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
         setupCameraParams();
         CameraHelper.getInstance().setSurfaceTexture(mSurfaceTexture);
         CameraHelper.getInstance().startPreview();
+
     }
 
     @Override
@@ -74,7 +76,7 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
         mSurfaceTexture.updateTexImage();
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
-        mTextureRender.drawFrame(mTextureId, mSTMatrix);
+//        mInputSurface.draw(mTextureId, mSTMatrix, mSurfaceTexture.getTimestamp());
     }
 
     private void setupCameraParams() {

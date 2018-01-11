@@ -1,4 +1,4 @@
-package com.slim.me.camerasample.preview;
+package com.slim.me.camerasample.camera_mpeg;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;

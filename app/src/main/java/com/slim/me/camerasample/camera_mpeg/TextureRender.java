@@ -66,8 +66,6 @@ public class TextureRender {
                 mTriangleVerticesData.length * FLOAT_SIZE_BYTES)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         mTriangleVertices.put(mTriangleVerticesData).position(0);
-
-        surfaceCreated();
     }
 
     public void drawFrame(int textureId, float[] stMatrix) {

@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.Surface;
 
 
+import com.slim.me.camerasample.encoder.EncodeConfig;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -39,9 +41,9 @@ public class VideoEncoder {
     private int mBitRate = 2000000;
     private String mOutputPath;
 
-    public void start(int width, int height) {
-        mWidth = width;
-        mHeight = height;
+    public void start(EncodeConfig encodeConfig) {
+        mWidth = encodeConfig.width;
+        mHeight = encodeConfig.height;
 
         mBufferInfo = new MediaCodec.BufferInfo();
 
