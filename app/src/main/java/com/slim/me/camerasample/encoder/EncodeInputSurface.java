@@ -1,10 +1,10 @@
-package com.slim.me.camerasample.camera_mpeg;
+package com.slim.me.camerasample.encoder;
 
-import android.graphics.SurfaceTexture;
 import android.view.Surface;
 
 import com.slim.me.camerasample.egl.EglCore;
 import com.slim.me.camerasample.egl.EglSurfaceBase;
+import com.slim.me.camerasample.render.TextureRender;
 
 /**
  * Created by slimxu on 2018/1/8.
