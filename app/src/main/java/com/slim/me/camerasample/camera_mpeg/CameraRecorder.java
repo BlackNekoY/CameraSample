@@ -7,6 +7,7 @@ import android.os.Message;
 
 import com.slim.me.camerasample.egl.VideoEncoder;
 import com.slim.me.camerasample.encoder.EncodeConfig;
+import com.slim.me.camerasample.encoder.EncodeInputSurface;
 
 import java.io.IOException;
 

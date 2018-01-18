@@ -35,7 +35,8 @@ public class CameraToMpegActivity extends AppCompatActivity {
         mPreviewParent.removeAllViews();
         mCameraPreviewView = new CameraGLSurfaceView(this);
         mCameraPreviewView.getRender().setEncodeConfig(new EncodeConfig(null, 360, 640,
-                2 * 1024 * 1024, 0, 1, 0));
+                0,0,0,0));
         mPreviewParent.addView(mCameraPreviewView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
     }
+
 }
