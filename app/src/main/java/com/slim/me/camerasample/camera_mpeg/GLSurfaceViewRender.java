@@ -27,10 +27,10 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
     private static final int RECORDING_OFF = 0;
     private static final int RECORDING_ON = 1;
 
-
     private CameraGLSurfaceView mCameraSurfaceView;
 
-    private int mTextureId;
+    private int mCameraTextureId;
+    private int mEncodeTextureId;
     private SurfaceTexture mSurfaceTexture;
 
     private CameraRecorder mRecorder;
@@ -54,11 +54,12 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // 创建TextureId
-        mTextureId = GlUtil.createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_NEAREST,
+        mCameraTextureId = GlUtil.createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_NEAREST,
                 GLES20.GL_LINEAR, GLES20.GL_CLAMP_TO_EDGE, GLES20.GL_CLAMP_TO_EDGE);
-        mSurfaceTexture = new SurfaceTexture(mTextureId);
+        mSurfaceTexture = new SurfaceTexture(mCameraTextureId);
         mSurfaceTexture.setOnFrameAvailableListener(mCameraSurfaceView);
 
+        // 创建OpenGL的render
         mTextureRender = new TextureRender();
 
         CameraHelper.getInstance().openCamera(CameraHelper.CAMERA_BACK);
@@ -66,6 +67,7 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
         CameraHelper.getInstance().setSurfaceTexture(mSurfaceTexture);
         CameraHelper.getInstance().startPreview();
 
+        mRecordingEnabled = true;
     }
 
     @Override
@@ -92,15 +94,17 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
+        // 将SurfaceTexture上的纹理数据交换到TextureId上
         mSurfaceTexture.updateTexImage();
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
 
-        // TODO
-//        mTextureRender.drawFrame(mTextureId, mSTMatrix);
-        onVideoDrawFrame(mTextureId, mSTMatrix, mSurfaceTexture.getTimestamp());
+        // 这里draw了Texture后，GLSurfaceView的环境会自动的在调用onDrawFrame后进行swapBuffers将EglSurface 上的内容交换到 View 的 Surface上显示
+        mTextureRender.drawTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mCameraTextureId, mSTMatrix, null);
+
+        onVideoDrawFrame(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mCameraTextureId, mSTMatrix, mSurfaceTexture.getTimestamp());
     }
 
-    private void onVideoDrawFrame(int textureId, float[] stMatrix, long timestampNanos) {
+    private void onVideoDrawFrame(int textureType, int textureId, float[] stMatrix, long timestampNanos) {
         if(mRecordingEnabled && mEncodeConfig != null) {
             switch (mRecordingState){
                 case RECORDING_OFF:
@@ -110,7 +114,7 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
                 case RECORDING_ON:
                     break;
             }
-            mRecorder.onFrameAvailable(textureId, stMatrix, timestampNanos);
+            mRecorder.onFrameAvailable(textureType, textureId, stMatrix, timestampNanos);
         } else {
             switch (mRecordingState) {
                 case RECORDING_OFF:
@@ -133,6 +137,11 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
     }
 
     public void notifyPause() {
+        if (mTextureRender != null) {
+            mTextureRender.release();
+        }
 
+        mRecordingEnabled = false;
+        mRecorder.stopRecord();
     }
 }

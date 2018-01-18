@@ -3,8 +3,10 @@ package com.slim.me.camerasample.camera_mpeg;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.FrameLayout;
 
 import com.slim.me.camerasample.R;
@@ -14,9 +16,10 @@ import com.slim.me.camerasample.encoder.EncodeConfig;
  * Created by slimxu on 2018/1/3.
  */
 
-public class CameraToMpegActivity extends AppCompatActivity {
+public class CameraToMpegActivity extends AppCompatActivity implements View.OnClickListener {
 
     private FrameLayout mPreviewParent;
+    private Button mRecordBtn;
     private CameraGLSurfaceView mCameraPreviewView;
 
     @Override
@@ -28,6 +31,8 @@ public class CameraToMpegActivity extends AppCompatActivity {
         setContentView(R.layout.activity_to_mpeg);
 
         mPreviewParent = (FrameLayout) findViewById(R.id.preview_parent);
+        mRecordBtn = (Button) findViewById(R.id.record);
+        mRecordBtn.setOnClickListener(this);
         setupCameraPreviewView();
     }
 
@@ -39,4 +44,11 @@ public class CameraToMpegActivity extends AppCompatActivity {
         mPreviewParent.addView(mCameraPreviewView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
     }
 
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.record:
+                break;
+        }
+    }
 }

@@ -45,13 +45,14 @@ public class CameraRecorder {
         mRecordHandler.sendMessage(msg);
     }
 
-    public void onFrameAvailable(int textureId, float[] stMatrix, long timestamp) {
+    public void onFrameAvailable(int textureType, int textureId, float[] stMatrix, long timestamp) {
         Message msg = Message.obtain();
         msg.what = MSG_ON_FRAME_AVAILABLE;
-        Object[] args = new Object[3];
-        args[0] = textureId;
-        args[1] = stMatrix;
-        args[2] = timestamp;
+        Object[] args = new Object[4];
+        args[0] = textureType;
+        args[1] = textureId;
+        args[2] = stMatrix;
+        args[3] = timestamp;
         msg.obj = args;
         mRecordHandler.sendMessage(msg);
     }
@@ -76,9 +77,9 @@ public class CameraRecorder {
         }
     }
 
-    private void handleOnFrameAvailable(int textureId, float[] stMatrix, long timestampNanos){
+    private void handleOnFrameAvailable(int textureType, int textureId, float[] stMatrix, long timestampNanos){
         mEncoder.frameAvaliable();
-        mInputSurface.draw(textureId, stMatrix, timestampNanos);
+        mInputSurface.draw(textureType, textureId, stMatrix, timestampNanos);
     }
     private void handleStopRecord(){
         mEncoder.stop();
@@ -100,7 +101,7 @@ public class CameraRecorder {
                     break;
                 case MSG_ON_FRAME_AVAILABLE:
                     Object[] args = (Object[]) msg.obj;
-                    handleOnFrameAvailable((int) args[0], (float[])args[1], (long)args[2]);
+                    handleOnFrameAvailable((int) args[0], (int) args[1], (float[])args[2], (long)args[3]);
                     break;
                 case MSG_STOP_RECORD:
                     handleStopRecord();
