@@ -48,6 +48,12 @@ public class CameraToMpegActivity extends AppCompatActivity implements View.OnCl
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.record:
+                mCameraPreviewView.getRender().mRecordingEnabled = !mCameraPreviewView.getRender().mRecordingEnabled;
+                if(mCameraPreviewView.getRender().mRecordingEnabled) {
+                    mRecordBtn.setText("停止录制");
+                }else {
+                    mRecordBtn.setText("开始录制");
+                }
                 break;
         }
     }

@@ -36,7 +36,7 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
     private CameraRecorder mRecorder;
     private EncodeConfig mEncodeConfig;
     private int mRecordingState = RECORDING_OFF;
-    private boolean mRecordingEnabled = false;
+    public boolean mRecordingEnabled = false;
 
     private final float[] mSTMatrix = new float[16];
     private TextureRender mTextureRender;
@@ -66,8 +66,6 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
         setupCameraParams();
         CameraHelper.getInstance().setSurfaceTexture(mSurfaceTexture);
         CameraHelper.getInstance().startPreview();
-
-        mRecordingEnabled = true;
     }
 
     @Override

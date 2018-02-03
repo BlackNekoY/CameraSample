@@ -83,6 +83,8 @@ public class CameraRecorder {
     }
     private void handleStopRecord(){
         mEncoder.stop();
+        mInputSurface.release();
+        mIsRecording = false;
     }
 
 
