@@ -6,9 +6,11 @@ import android.hardware.Camera;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 
 import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.encoder.EncodeConfig;
+import com.slim.me.camerasample.render.RenderBuffer;
 import com.slim.me.camerasample.render.TextureRender;
 import com.slim.me.camerasample.util.GlUtil;
 import com.slim.me.camerasample.util.UiUtil;
@@ -30,7 +32,6 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
     private CameraGLSurfaceView mCameraSurfaceView;
 
     private int mCameraTextureId;
-    private int mEncodeTextureId;
     private SurfaceTexture mSurfaceTexture;
 
     private CameraRecorder mRecorder;
@@ -40,6 +41,10 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
 
     private final float[] mSTMatrix = new float[16];
     private TextureRender mTextureRender;
+    private RenderBuffer mRenderFBO;
+
+    private int mSurfaceWidth, mSurfaceHeight;
+    private int mPreviewWidth, mPreviewHeight;
 
 
     public GLSurfaceViewRender(CameraGLSurfaceView cameraSurfaceView) {
@@ -66,10 +71,15 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
         setupCameraParams();
         CameraHelper.getInstance().setSurfaceTexture(mSurfaceTexture);
         CameraHelper.getInstance().startPreview();
+
+        mPreviewWidth = CameraHelper.getInstance().getCameraParameters().getPreviewSize().width;
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
+        mSurfaceWidth = width;
+        mSurfaceHeight = height;
+
         CameraHelper.getInstance().stopPreview();
         CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
                 UiUtil.getWindowScreenWidth(mCameraSurfaceView.getContext()),
@@ -88,6 +98,11 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
         }
         CameraHelper.getInstance().setSurfaceTexture(mSurfaceTexture);
         CameraHelper.getInstance().startPreview();
+
+        mPreviewWidth = CameraHelper.getInstance().getCameraParameters().getPreviewSize().width;
+        mPreviewHeight = CameraHelper.getInstance().getCameraParameters().getPreviewSize().height;;
+
+        mRenderFBO = new RenderBuffer(width, height);
     }
 
     @Override
@@ -96,10 +111,16 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
         mSurfaceTexture.updateTexImage();
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
 
-        // 这里draw了Texture后，GLSurfaceView的环境会自动的在调用onDrawFrame后进行swapBuffers将EglSurface 上的内容交换到 View 的 Surface上显示
-        mTextureRender.drawTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mCameraTextureId, mSTMatrix, null);
+        float[] mvpMatrix = caculateCenterCropMvpMatrix(mPreviewWidth, mPreviewHeight, mSurfaceWidth, mSurfaceHeight);
+        mvpMatrix = null;
 
-        onVideoDrawFrame(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mCameraTextureId, mSTMatrix, mSurfaceTexture.getTimestamp());
+        // 这里draw了Texture后，GLSurfaceView的环境会自动的在调用onDrawFrame后进行swapBuffers将EglSurface 上的内容交换到 View 的 Surface上显示
+        mRenderFBO.bind();
+        mTextureRender.drawTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mCameraTextureId, mSTMatrix, mvpMatrix);
+        mRenderFBO.unbind();
+        mTextureRender.drawTexture(GLES20.GL_TEXTURE_2D, mRenderFBO.getTextId(), mSTMatrix, mvpMatrix);
+
+        onVideoDrawFrame(GLES20.GL_TEXTURE_2D, mRenderFBO.getTextId(), mSTMatrix, mSurfaceTexture.getTimestamp());
     }
 
     private void onVideoDrawFrame(int textureType, int textureId, float[] stMatrix, long timestampNanos) {
@@ -141,5 +162,20 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
 
         mRecordingEnabled = false;
         mRecorder.stopRecord();
+    }
+
+    public static float[] caculateCenterCropMvpMatrix(int textureWidth, int textureHeight, int surfaceWidth, int surfaceHeight) {
+        float surfaceRatio = (float) surfaceWidth / surfaceHeight;
+        float textureRatio = (float) textureWidth / textureHeight;
+        float scaleX = 1.0f, scaleY = 1.0f;
+        if (surfaceRatio < textureRatio) {
+            scaleX = (textureRatio * surfaceHeight) / surfaceWidth;
+        } else if (surfaceRatio > textureRatio) {
+            scaleY = surfaceWidth / (textureRatio * surfaceHeight);
+        }
+        float[] mvpMatrix = new float[16];
+        Matrix.setIdentityM(mvpMatrix, 0);
+        Matrix.scaleM(mvpMatrix, 0, scaleX, scaleY, 1f);
+        return mvpMatrix;
     }
 }
