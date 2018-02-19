@@ -1,7 +1,6 @@
 package com.slim.me.camerasample.render;
 
 import android.opengl.GLES20;
-import android.renderscript.Matrix2f;
 
 import com.slim.me.camerasample.util.GlUtil;
 
@@ -13,17 +12,20 @@ public class RenderBuffer {
     private int mFrameBufferId;
     private int mTextureId;
     private int mRenderBufferId;
+    private int mActivitUnit;
 
     private int mWidth;
     private int mHeight;
 
-    public RenderBuffer(int width, int height) {
+    public RenderBuffer(int width, int height, int activeUnit) {
         mWidth = width;
         mHeight = height;
+        mActivitUnit = activeUnit;
 
         int[] frameBuffers = new int[1];
         int[] renderBuffers = new int[1];
 
+        GLES20.glActiveTexture(activeUnit);
         mTextureId = GlUtil.createTexture(GLES20.GL_TEXTURE_2D);
         GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, mWidth, mHeight, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);

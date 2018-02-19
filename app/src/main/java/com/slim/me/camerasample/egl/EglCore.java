@@ -23,10 +23,14 @@ public class EglCore {
     private EGLContext mEGLContext = EGL14.EGL_NO_CONTEXT;
     private EGLConfig mEGLConfig = null;
 
+    public EglCore () {
+        this(null);
+    }
+
     /**
      * 准备EGL display and context
      */
-    public EglCore () {
+    public EglCore (EGLContext shareEglContext) {
         if(mEGLDisplay != EGL14.EGL_NO_DISPLAY) {
             throw new IllegalStateException("EGL already set up.");
         }
@@ -48,12 +52,16 @@ public class EglCore {
             throw new RuntimeException("Unable to find a suitable EGLConfig");
         }
 
+        if(shareEglContext == null) {
+            shareEglContext = EGL14.EGL_NO_CONTEXT;
+        }
+
         // 创建EGLContext
         int[] attriList = {
                 EGL14.EGL_CONTEXT_CLIENT_VERSION, 2,    // 使用OpenGL ES2.0
                 EGL14.EGL_NONE
         };
-        mEGLContext = EGL14.eglCreateContext(mEGLDisplay, mEGLConfig, EGL14.EGL_NO_CONTEXT, attriList, 0);
+        mEGLContext = EGL14.eglCreateContext(mEGLDisplay, mEGLConfig, shareEglContext, attriList, 0);
         checkEglError("eglCreateContext");
 
         // Confirm with query.

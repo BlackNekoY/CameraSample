@@ -1,6 +1,7 @@
 package com.slim.me.camerasample.camera_mpeg;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -11,6 +12,8 @@ import android.widget.FrameLayout;
 
 import com.slim.me.camerasample.R;
 import com.slim.me.camerasample.encoder.EncodeConfig;
+
+import java.io.File;
 
 /**
  * Created by slimxu on 2018/1/3.
@@ -39,8 +42,13 @@ public class CameraToMpegActivity extends AppCompatActivity implements View.OnCl
     private void setupCameraPreviewView() {
         mPreviewParent.removeAllViews();
         mCameraPreviewView = new CameraGLSurfaceView(this);
-        mCameraPreviewView.getRender().setEncodeConfig(new EncodeConfig(null, 360, 640,
-                0,0,0,0));
+        mCameraPreviewView.getRender().setEncodeConfig(new EncodeConfig(
+                Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "video-" + System.currentTimeMillis() + ".mp4",
+                360, 640,
+                2 * 1024 * 1024,
+                1,
+                30,
+                0));
         mPreviewParent.addView(mCameraPreviewView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
     }
 

@@ -45,14 +45,15 @@ public class CameraRecorder {
         mRecordHandler.sendMessage(msg);
     }
 
-    public void onFrameAvailable(int textureType, int textureId, float[] stMatrix, long timestamp) {
+    public void onFrameAvailable(int textureType, int textureId, float[] textureMatrix, float[] mvpMatrix, long timestamp) {
         Message msg = Message.obtain();
         msg.what = MSG_ON_FRAME_AVAILABLE;
-        Object[] args = new Object[4];
+        Object[] args = new Object[5];
         args[0] = textureType;
         args[1] = textureId;
-        args[2] = stMatrix;
-        args[3] = timestamp;
+        args[2] = textureMatrix;
+        args[3] = mvpMatrix;
+        args[4] = timestamp;
         msg.obj = args;
         mRecordHandler.sendMessage(msg);
     }
@@ -70,16 +71,16 @@ public class CameraRecorder {
         mIsRecording = true;
         try {
             mEncoder.start(encodeConfig);
-            mInputSurface.init(mEncoder.getInputSurface());
+            mInputSurface.init(encodeConfig.sharedContext, mEncoder.getInputSurface());
         } catch (IOException e) {
             mIsRecording = false;
             return;
         }
     }
 
-    private void handleOnFrameAvailable(int textureType, int textureId, float[] stMatrix, long timestampNanos){
+    private void handleOnFrameAvailable(int textureType, int textureId, float[] textureMatrix, float[] mvpMatrix, long timestampNanos){
         mEncoder.frameAvaliable();
-        mInputSurface.draw(textureType, textureId, stMatrix, timestampNanos);
+        mInputSurface.draw(textureType, textureId, textureMatrix, mvpMatrix, timestampNanos);
     }
     private void handleStopRecord(){
         mEncoder.stop();
@@ -103,7 +104,7 @@ public class CameraRecorder {
                     break;
                 case MSG_ON_FRAME_AVAILABLE:
                     Object[] args = (Object[]) msg.obj;
-                    handleOnFrameAvailable((int) args[0], (int) args[1], (float[])args[2], (long)args[3]);
+                    handleOnFrameAvailable((int) args[0], (int) args[1], (float[])args[2],(float[]) args[3], (long)args[4]);
                     break;
                 case MSG_STOP_RECORD:
                     handleStopRecord();

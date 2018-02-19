@@ -1,12 +1,18 @@
 package com.slim.me.camerasample.encoder;
 
 
+import android.opengl.EGLContext;
+
 /**
  * Created by slimxu on 2017/11/19.
  * 合成视频的参数配置类
  */
 
 public class EncodeConfig {
+    /**
+     *
+     */
+    public EGLContext sharedContext;
     /**
      * 输出路径
      */
@@ -45,6 +51,14 @@ public class EncodeConfig {
         this.iFrameRate = iFrameRate;
         this.frameRate = frameRate;
         this.orientation = orientation;
+    }
+
+    public void updateEglContext(EGLContext eglContext) {
+        sharedContext = eglContext;
+    }
+
+    public EGLContext getSharedEglContext() {
+        return sharedContext;
     }
 }
 

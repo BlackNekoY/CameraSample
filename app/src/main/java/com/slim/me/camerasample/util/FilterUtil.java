@@ -60,12 +60,19 @@ public class FilterUtil {
                     "gl_FragColor = texture2D(inputImageTexture, textureCoordinate);\n" +
                     "}";
 
+    /**
+     * 需要绘制的图形顶点坐标，也就是整个屏幕
+     * 标准化设备坐标
+     */
     public static float VERTEXT_COORDS[] = {
             -1.0f, -1.0f,
             1.0f, -1.0f,
             -1.0f, 1.0f,
             1.0f, 1.0f
     };
+    /**
+     *
+     */
     public static final float TEXUTURE_COORDS[] = {
             0.0f, 0.0f,
             1.0f, 0.0f,

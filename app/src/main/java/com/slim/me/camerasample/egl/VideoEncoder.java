@@ -24,9 +24,6 @@ public class VideoEncoder {
     public static final String TAG = "VideoEncoder";
 
     private static final String MIME_TYPE = "video/avc";
-    private static final int IFRAME_INTERVAL = 10;
-    private static final int FRAME_RATE = 15;               // 15fps
-    private static final File OUTPUT_DIR = Environment.getExternalStorageDirectory();
 
     private MediaCodec mEncoder;
     private MediaMuxer mMuxer;
@@ -36,23 +33,20 @@ public class VideoEncoder {
     private boolean mMuxerStarted;
     private MediaCodec.BufferInfo mBufferInfo;
 
-    private int mWidth;
-    private int mHeight;
-    private int mBitRate = 2000000;
-    private String mOutputPath;
+    private EncodeConfig mEncodeConfig;
 
     public void start(EncodeConfig encodeConfig) throws IOException {
-        mWidth = encodeConfig.width;
-        mHeight = encodeConfig.height;
+        mEncodeConfig = encodeConfig;
 
         mBufferInfo = new MediaCodec.BufferInfo();
 
         // 配置MediaFormat
-        MediaFormat format = MediaFormat.createVideoFormat(MIME_TYPE, mWidth, mHeight);
+        MediaFormat format = MediaFormat.createVideoFormat(MIME_TYPE, mEncodeConfig.width, mEncodeConfig.height);
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-        format.setInteger(MediaFormat.KEY_BIT_RATE, mBitRate);
-        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL);
-        format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
+        format.setInteger(MediaFormat.KEY_BIT_RATE, mEncodeConfig.bitRate);
+        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, mEncodeConfig.iFrameRate);
+        format.setInteger(MediaFormat.KEY_FRAME_RATE, mEncodeConfig.frameRate);
+        Log.d(TAG, " encoder format : " + format);
 
         // 创建MediaCodec
         mEncoder = MediaCodec.createEncoderByType(MIME_TYPE);
@@ -66,12 +60,10 @@ public class VideoEncoder {
         // start
         mEncoder.start();
 
-        // 输出路径
-        mOutputPath = new File(OUTPUT_DIR, "test_" + System.currentTimeMillis() + ".mp4").toString();
-
         // 创建Muxer(输出路径和格式)
         try {
-            mMuxer = new MediaMuxer(mOutputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+            mMuxer = new MediaMuxer(mEncodeConfig.outputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+            mMuxer.setOrientationHint(mEncodeConfig.orientation);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -201,11 +193,4 @@ public class VideoEncoder {
         return mInputSurface;
     }
 
-    /**
-     * Generates the presentation time for frame N, in nanoseconds.
-     */
-    public long computePresentationTimeNsec(int frameIndex) {
-        final long ONE_BILLION = 1000000000;
-        return frameIndex * ONE_BILLION / FRAME_RATE;
-    }
 }

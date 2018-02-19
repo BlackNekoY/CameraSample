@@ -31,7 +31,7 @@ public class EncodeAndMux {
         mVideoEncoder = new VideoEncoder();
         mVideoEncoder.start(mEncodeConfig);
 
-        mEglSurface = new EglSurfaceBase(new EglCore());
+        mEglSurface = new EglSurfaceBase(new EglCore(null));
         mEglSurface.createWindowSurface(mVideoEncoder.getInputSurface());
         mEglSurface.makeCurrent();
 
@@ -41,7 +41,7 @@ public class EncodeAndMux {
             mVideoEncoder.frameAvaliable();
 
             mRender.drawFrame(i);
-            mEglSurface.setPresentationTime(mVideoEncoder.computePresentationTimeNsec(i));
+            mEglSurface.setPresentationTime(computePresentationTimeNsec(i));
 
             mEglSurface.swapBuffers();
         }
@@ -50,5 +50,10 @@ public class EncodeAndMux {
         mEglSurface.releaseEglSurface();
     }
 
+    public int computePresentationTimeNsec(int frameIndex) {
+//        final long ONE_BILLION = 1000000000;
+//        return frameIndex * ONE_BILLION / FRAME_RATE;
+        return 0;
+    }
 
 }

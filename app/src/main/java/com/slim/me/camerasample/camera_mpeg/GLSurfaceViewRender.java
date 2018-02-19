@@ -3,6 +3,7 @@ package com.slim.me.camerasample.camera_mpeg;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.opengl.EGL14;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -59,8 +60,7 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // 创建TextureId
-        mCameraTextureId = GlUtil.createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_NEAREST,
-                GLES20.GL_LINEAR, GLES20.GL_CLAMP_TO_EDGE, GLES20.GL_CLAMP_TO_EDGE);
+        mCameraTextureId = GlUtil.createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
         mSurfaceTexture = new SurfaceTexture(mCameraTextureId);
         mSurfaceTexture.setOnFrameAvailableListener(mCameraSurfaceView);
 
@@ -72,7 +72,8 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
         CameraHelper.getInstance().setSurfaceTexture(mSurfaceTexture);
         CameraHelper.getInstance().startPreview();
 
-        mPreviewWidth = CameraHelper.getInstance().getCameraParameters().getPreviewSize().width;
+        mRecordingState = RECORDING_OFF;
+        mRecordingEnabled = false;
     }
 
     @Override
@@ -81,7 +82,18 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
         mSurfaceHeight = height;
 
         CameraHelper.getInstance().stopPreview();
-        CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
+        setPreviewSize();
+        CameraHelper.getInstance().setSurfaceTexture(mSurfaceTexture);
+        CameraHelper.getInstance().startPreview();
+
+        mPreviewWidth = CameraHelper.getInstance().getCameraParameters().getPreviewSize().width;
+        mPreviewHeight = CameraHelper.getInstance().getCameraParameters().getPreviewSize().height;
+
+        mRenderFBO = new RenderBuffer(mSurfaceWidth, mSurfaceHeight, GLES20.GL_TEXTURE0);
+    }
+
+    private void setPreviewSize() {
+        CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(mSurfaceWidth, mSurfaceHeight,
                 UiUtil.getWindowScreenWidth(mCameraSurfaceView.getContext()),
                 UiUtil.getWindowScreenHeight(mCameraSurfaceView.getContext()));
         if(sizes != null) {
@@ -96,13 +108,6 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
                 CameraHelper.getInstance().setCameraParameters(param);
             }
         }
-        CameraHelper.getInstance().setSurfaceTexture(mSurfaceTexture);
-        CameraHelper.getInstance().startPreview();
-
-        mPreviewWidth = CameraHelper.getInstance().getCameraParameters().getPreviewSize().width;
-        mPreviewHeight = CameraHelper.getInstance().getCameraParameters().getPreviewSize().height;;
-
-        mRenderFBO = new RenderBuffer(width, height);
     }
 
     @Override
@@ -114,26 +119,31 @@ public class GLSurfaceViewRender implements GLSurfaceView.Renderer {
         float[] mvpMatrix = caculateCenterCropMvpMatrix(mPreviewWidth, mPreviewHeight, mSurfaceWidth, mSurfaceHeight);
         mvpMatrix = null;
 
+        // 不使用FBO的方式
+//        mTextureRender.drawTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mCameraTextureId, mSTMatrix, mvpMatrix);
+//        onVideoDrawFrame(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mCameraTextureId, mSTMatrix, mvpMatrix, mSurfaceTexture.getTimestamp());
+
         // 这里draw了Texture后，GLSurfaceView的环境会自动的在调用onDrawFrame后进行swapBuffers将EglSurface 上的内容交换到 View 的 Surface上显示
         mRenderFBO.bind();
         mTextureRender.drawTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mCameraTextureId, mSTMatrix, mvpMatrix);
         mRenderFBO.unbind();
-        mTextureRender.drawTexture(GLES20.GL_TEXTURE_2D, mRenderFBO.getTextId(), mSTMatrix, mvpMatrix);
+        mTextureRender.drawTexture(GLES20.GL_TEXTURE_2D, mRenderFBO.getTextId(), null, null);
 
-        onVideoDrawFrame(GLES20.GL_TEXTURE_2D, mRenderFBO.getTextId(), mSTMatrix, mSurfaceTexture.getTimestamp());
+        onVideoDrawFrame(GLES20.GL_TEXTURE_2D, mRenderFBO.getTextId(), null, null, mSurfaceTexture.getTimestamp());
     }
 
-    private void onVideoDrawFrame(int textureType, int textureId, float[] stMatrix, long timestampNanos) {
+    private void onVideoDrawFrame(int textureType, int textureId, float[] textureMatrix, float[] mvpMatrix, long timestampNanos) {
         if(mRecordingEnabled && mEncodeConfig != null) {
             switch (mRecordingState){
                 case RECORDING_OFF:
+                    mEncodeConfig.updateEglContext(EGL14.eglGetCurrentContext());
                     mRecorder.startRecord(mEncodeConfig);
                     mRecordingState = RECORDING_ON;
                     break;
                 case RECORDING_ON:
                     break;
             }
-            mRecorder.onFrameAvailable(textureType, textureId, stMatrix, timestampNanos);
+            mRecorder.onFrameAvailable(textureType, textureId, textureMatrix, mvpMatrix, timestampNanos);
         } else {
             switch (mRecordingState) {
                 case RECORDING_OFF:

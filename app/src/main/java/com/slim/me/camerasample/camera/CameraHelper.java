@@ -25,7 +25,7 @@ public class CameraHelper {
     public static final int CODE_CAMERA_OPENED = 3; // 已经打开了摄像头
     public static final int CODE_CAMERA_GET_PARAM = 4; // 获取CameraParams失败
 
-    private static double ASPECT_TOLERANCE = 0.01f;
+    private static double ASPECT_TOLERANCE = 0.05f;
 
     private static CameraHelper mInstance ;
     private Camera mCamera;
