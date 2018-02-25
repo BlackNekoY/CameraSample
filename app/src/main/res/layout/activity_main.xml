@@ -10,25 +10,30 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="CameraPreview"
+        android:text="摄像机预览"
         android:onClick="gotoCameraPreviewActivity"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="EGLSurfaceView"
+        android:text="SurfaceView和EGL"
         android:onClick="gotoEGLSurfaceActivity"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="encode_mux"
+        android:text="encode测试"
         android:onClick="gotoEncodeAndMuxActivity"/>
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="camera_mpeg"
+        android:text="摄像机录制"
         android:onClick="gotoCameraMpegActivity"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="纹理测试"
+        android:onClick="gotoTextureTestActivity"/>
 
 
 </LinearLayout>

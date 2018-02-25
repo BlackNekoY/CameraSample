@@ -24,7 +24,7 @@ public class FilterUtil {
 
     //默认的顶点shader
     public static final String NO_FILTER_VERTEX_SHADER =
-            "uniform mat4 uMVPMatrix;\n" +
+                    "uniform mat4 uMVPMatrix;\n" +
                     "uniform mat4 uTextureMatrix;\n" +
                     "attribute vec4 position;\n" +
                     "attribute vec4 inputTextureCoordinate;\n" +
