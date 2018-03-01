@@ -33,6 +33,8 @@ public class VideoEncoder {
 
     private EncodeConfig mEncodeConfig;
 
+    private AudioEncoder mAudioEncoder;
+
     public void start(EncodeConfig encodeConfig) throws IOException {
         mEncodeConfig = encodeConfig;
 
@@ -67,6 +69,9 @@ public class VideoEncoder {
         }
         mTrackIndex = -1;
         mMuxerStarted = false;
+
+        mAudioEncoder = new AudioEncoder();
+        mAudioEncoder.start();
     }
 
     public void stop() {
@@ -135,8 +140,11 @@ public class VideoEncoder {
                 }
                 MediaFormat newFormat = mEncoder.getOutputFormat();
                 Log.d(TAG, "encoder output format changed: " + newFormat);
-                // 获取video track的index，启动MediaMuxer
+
+                // 将VideoFormat和AudioFormat加入Muxer，得到VideoTrack和AudioTrack
                 mTrackIndex = mMuxer.addTrack(newFormat);
+                mAudioEncoder.addAudioTrack(mMuxer);
+
                 mMuxer.start();
                 mMuxerStarted = true;
             } else if (encoderStatus < 0) {
