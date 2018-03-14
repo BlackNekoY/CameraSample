@@ -7,6 +7,7 @@ import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.media.MediaRecorder;
+import android.util.Log;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -43,25 +44,25 @@ public class AudioEncoder {
 
     private MediaCodec mAACEncoder;
     private MediaCodec.BufferInfo mBufferInfo;
-    private MediaMuxer mMuxer;
-    private int mAudioTrackIndex = -1;
+    private MuxerWrapper mMuxer;
 
     private AudioRecord mAudioRecord;
     private int mBufferSize;
 
-    private boolean mIsRecording;
+    private volatile boolean mIsRecording;
+    public static final long TIMEOUT_USEC = 10000;
 
-
-    public void addAudioTrack(MediaMuxer muxer) {
-        mMuxer = muxer;
-        mAudioTrackIndex = muxer.addTrack(mAACEncoder.getOutputFormat());
+    public AudioEncoder(MuxerWrapper muxer) {
+        this.mMuxer = muxer;
     }
 
-    public void start() {
+    public void start(EncodeConfig encodeConfig) {
         // 创建MediaCodec
         mBufferInfo = new MediaCodec.BufferInfo();
         MediaFormat audioFormat = MediaFormat.createAudioFormat(MIME_TYPE, SAMPLE_RATE, CHANNEL_COUNT);
         audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE);
+        audioFormat.setInteger(MediaFormat.KEY_CHANNEL_COUNT, CHANNEL_COUNT);
+        audioFormat.setInteger(MediaFormat.KEY_SAMPLE_RATE, SAMPLE_RATE);
         audioFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
 
         try {
@@ -71,18 +72,22 @@ public class AudioEncoder {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        mAudioTrackIndex = -1;
 
         new RecordThread().start();
     }
 
-    public void drainEncoder(boolean endOfStream) {
-
+    public void release() {
+        mAACEncoder.stop();
+        mAACEncoder.release();
+        mAACEncoder = null;
+        mIsRecording = false;
     }
 
     private class RecordThread extends Thread {
         @Override
         public void run() {
+
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
 
             // 创建AudioRecord作为音频源
             mBufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, RECORDER_CHANNELS, RECORDER_AUDIO_FORMAT);
@@ -107,7 +112,44 @@ public class AudioEncoder {
     }
 
     private void encode(ByteBuffer buf, int readBytes) {
+        if(!mIsRecording) {
+            return;
+        }
         final ByteBuffer[] inputBuffers = mAACEncoder.getInputBuffers();
+        int inputBufferIndex = mAACEncoder.dequeueInputBuffer(-1);
+        if(inputBufferIndex >= 0) {
+            ByteBuffer inputBuffer = inputBuffers[inputBufferIndex];
+            inputBuffer.clear();
+            inputBuffer.put(buf);
+            mAACEncoder.queueInputBuffer(inputBufferIndex, 0, buf.array().length,
+                    System.nanoTime() / 1000, 0);
+        }
+
+        ByteBuffer[] encoderOutputBuffers = mAACEncoder.getOutputBuffers();
+        int encoderStatus;
+
+        do{
+            encoderStatus = mAACEncoder.dequeueOutputBuffer(mBufferInfo, TIMEOUT_USEC);
+            if(encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
+            }else if(encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
+                encoderOutputBuffers = mAACEncoder.getOutputBuffers();
+            }else if(encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                final MediaFormat format = mAACEncoder.getOutputFormat();
+                mMuxer.addTrack(MuxerWrapper.TRACK_AUDIO, format);
+            }else if(encoderStatus < 0) {
+
+            }else {
+                final ByteBuffer encodeData = encoderOutputBuffers[encoderStatus];
+                if((mBufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
+                    mBufferInfo.size = 0;
+                }
+                if(mBufferInfo.size > 0) {
+                    mBufferInfo.presentationTimeUs = System.nanoTime() / 1000;
+                    mMuxer.addSampleData(new MuxerWrapper.MuxerData(MuxerWrapper.TRACK_AUDIO, encodeData, mBufferInfo));
+                }
+                mAACEncoder.releaseOutputBuffer(encoderStatus, false);
+            }
+        }while (encoderStatus >= 0);
     }
 
 }

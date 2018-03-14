@@ -8,8 +8,6 @@ import android.util.Log;
 import android.view.Surface;
 
 
-import com.slim.me.camerasample.record.encode.EncodeConfig;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -24,16 +22,13 @@ public class VideoEncoder {
     private static final String MIME_TYPE = "video/avc";
 
     private MediaCodec mEncoder;
-    private MediaMuxer mMuxer;
     private Surface mInputSurface;  // MediaCodec的Surface，从这里拿到更新的Frame并编码成视频
-
-    private int mTrackIndex;
-    private boolean mMuxerStarted;
     private MediaCodec.BufferInfo mBufferInfo;
 
     private EncodeConfig mEncodeConfig;
 
     private AudioEncoder mAudioEncoder;
+    private MuxerWrapper mMuxerWrapper;
 
     public void start(EncodeConfig encodeConfig) throws IOException {
         mEncodeConfig = encodeConfig;
@@ -59,25 +54,13 @@ public class VideoEncoder {
 
         // start
         mEncoder.start();
-
-        // 创建Muxer(输出路径和格式)
-        try {
-            mMuxer = new MediaMuxer(mEncodeConfig.outputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-            mMuxer.setOrientationHint(mEncodeConfig.orientation);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        mTrackIndex = -1;
-        mMuxerStarted = false;
-
-        mAudioEncoder = new AudioEncoder();
-        mAudioEncoder.start();
     }
 
     public void stop() {
         // 先将队列中的数据处理完毕，再停止
         drainEncoder(true);
         release();
+
     }
 
     public void release() {
@@ -86,15 +69,15 @@ public class VideoEncoder {
             mEncoder.release();
             mEncoder = null;
         }
-        if(mMuxer != null) {
-            if(mMuxerStarted) {
-                mMuxerStarted = false;
-                mTrackIndex = -1;
-                mMuxer.stop();
-            }
-            mMuxer.release();
-            mMuxer = null;
+
+        if(mAudioEncoder != null) {
+            mAudioEncoder.release();
         }
+
+        if(mMuxerWrapper != null) {
+            mMuxerWrapper.release();
+        }
+
     }
 
     public void frameAvaliable() {
@@ -135,18 +118,9 @@ public class VideoEncoder {
                 encoderOutputBuffers = mEncoder.getOutputBuffers();
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 // 只有在第一次写入视频时会到这里
-                if (mMuxerStarted) {
-                    throw new RuntimeException("format changed twice");
-                }
                 MediaFormat newFormat = mEncoder.getOutputFormat();
                 Log.d(TAG, "encoder output format changed: " + newFormat);
-
-                // 将VideoFormat和AudioFormat加入Muxer，得到VideoTrack和AudioTrack
-                mTrackIndex = mMuxer.addTrack(newFormat);
-                mAudioEncoder.addAudioTrack(mMuxer);
-
-                mMuxer.start();
-                mMuxerStarted = true;
+                mMuxerWrapper.addTrack(MuxerWrapper.TRACK_VIDEO, newFormat);
             } else if (encoderStatus < 0) {
                 // 其他未知错误，忽略
                 Log.w(TAG, "unexpected result from encoder.dequeueOutputBuffer: " + encoderStatus);
@@ -168,15 +142,11 @@ public class VideoEncoder {
                 }
 
                 if (mBufferInfo.size != 0) {
-                    if (!mMuxerStarted) {
-                        throw new RuntimeException("muxer hasn't started");
-                    }
-
                     // adjust the ByteBuffer values to match BufferInfo (not needed?)
                     encodedData.position(mBufferInfo.offset);
                     encodedData.limit(mBufferInfo.offset + mBufferInfo.size);
 
-                    mMuxer.writeSampleData(mTrackIndex, encodedData, mBufferInfo);
+                    mMuxerWrapper.addSampleData(new MuxerWrapper.MuxerData(MuxerWrapper.TRACK_VIDEO, encodedData, mBufferInfo));
                     Log.d(TAG, "sent " + mBufferInfo.size + " bytes to muxer, ts=" +
                             mBufferInfo.presentationTimeUs * 1000);
                 }
