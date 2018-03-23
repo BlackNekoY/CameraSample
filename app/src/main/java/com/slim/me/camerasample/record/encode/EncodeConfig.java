@@ -9,9 +9,6 @@ import android.opengl.EGLContext;
  */
 
 public class EncodeConfig {
-    /**
-     *
-     */
     public EGLContext sharedContext;
     /**
      * 输出路径
