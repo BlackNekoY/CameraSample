@@ -7,6 +7,7 @@ import android.os.Message;
 
 import com.slim.me.camerasample.record.encode.EncodeConfig;
 import com.slim.me.camerasample.record.encode.EncodeInputSurface;
+import com.slim.me.camerasample.record.encode.VideoAudioEncoder;
 import com.slim.me.camerasample.record.encode.VideoEncoder;
 
 import java.io.IOException;
@@ -19,9 +20,10 @@ public class CameraRecorder {
 
     public static final int MSG_START_RECORD = 1;
     public static final int MSG_ON_FRAME_AVAILABLE = 2;
-    public static final int MSG_STOP_RECORD = 3;
+    public static final int MSG_AUDIO_FRAME_AVAILABLE = 3;
+    public static final int MSG_STOP_RECORD = 4;
 
-    private VideoEncoder mEncoder;
+    private VideoAudioEncoder mEncoder;
     private EncodeInputSurface mInputSurface;
 
     private HandlerThread mRecordThread;
@@ -34,7 +36,7 @@ public class CameraRecorder {
         mRecordThread.start();
         mRecordHandler = new RecordHandler(mRecordThread.getLooper());
 
-        mEncoder = new VideoEncoder();
+        mEncoder = new VideoAudioEncoder();
         mInputSurface = new EncodeInputSurface();
     }
 
@@ -58,9 +60,11 @@ public class CameraRecorder {
         mRecordHandler.sendMessage(msg);
     }
 
+
     public void stopRecord() {
         Message msg = Message.obtain();
         msg.what = MSG_STOP_RECORD;
+//        mRecordHandler.removeCallbacksAndMessages(null);
         mRecordHandler.sendMessage(msg);
     }
 
@@ -70,7 +74,7 @@ public class CameraRecorder {
         }
         mIsRecording = true;
         try {
-            mEncoder.start(encodeConfig);
+            mEncoder.startEncode(encodeConfig, mRecordHandler);
             mInputSurface.init(encodeConfig.sharedContext, mEncoder.getInputSurface());
         } catch (IOException e) {
             mIsRecording = false;
@@ -79,9 +83,14 @@ public class CameraRecorder {
     }
 
     private void handleOnFrameAvailable(int textureType, int textureId, float[] textureMatrix, float[] mvpMatrix, long timestampNanos){
-        mEncoder.frameAvaliable();
+        mEncoder.onVideoFrameAvailable();
         mInputSurface.draw(textureType, textureId, textureMatrix, mvpMatrix, timestampNanos);
     }
+
+    private void handleOnAudioFrameAvailable(VideoAudioEncoder.PCMFrame pcmFrame) {
+        mEncoder.onAudioFrameAvailable(pcmFrame);
+    }
+
     private void handleStopRecord(){
         mEncoder.stop();
         mInputSurface.release();
@@ -106,6 +115,10 @@ public class CameraRecorder {
                     Object[] args = (Object[]) msg.obj;
                     handleOnFrameAvailable((int) args[0], (int) args[1], (float[])args[2],(float[]) args[3], (long)args[4]);
                     break;
+                case MSG_AUDIO_FRAME_AVAILABLE:
+                    VideoAudioEncoder.PCMFrame pcmFrame = (VideoAudioEncoder.PCMFrame) msg.obj;
+                    handleOnAudioFrameAvailable(pcmFrame);
+                    break;
                 case MSG_STOP_RECORD:
                     handleStopRecord();
                     break;
@@ -114,5 +127,6 @@ public class CameraRecorder {
             }
         }
     }
+
 
 }
