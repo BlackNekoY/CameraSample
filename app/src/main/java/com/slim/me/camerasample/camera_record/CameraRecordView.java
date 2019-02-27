@@ -31,45 +31,13 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
 
     public static final String TAG = "CameraRecordView";
 
-    private final String VERTEX_SHADER =
-            "#version 300 es\n" +
-            "layout(location = 0) in vec2 pos;\n" +
-            "layout(location = 1) in vec2 texPos;\n" +
-            "out vec2 outTexPos;\n" +
-            "void main() {\n" +
-            "   gl_Position = vec4(pos, 0, 1);\n" +
-            "   outTexPos = texPos;\n" +
-            "}\n";
-
-    private final String FRAGMENT_SHADER =
-            "#version 300 es\n" +
-            "#extension GL_OES_EGL_image_external_essl3 : require\n" +
-            "precision mediump float;\n" +
-            "in vec2 outTexPos;\n" +
-            "uniform mat4 matrix;\n" +
-            "uniform samplerExternalOES cameraTexture; \n" +
-            "out vec4 color;\n" +
-            "void main() { \n" +
-            "   vec4 texTranformPos = matrix * vec4(outTexPos, 0, 1); \n" +
-            "   color = texture(cameraTexture, vec2(texTranformPos.x, texTranformPos.y));\n" +
-            "} \n";
-
-    private final float[] VERTEX_ARRAY = {
-            // 位置顶点    // 纹理顶点
-            -1, 1,   0, 1,
-            1, 1,    1, 1,
-            -1, -1,  0, 0,
-            1, -1,   1, 0
-    };
-    private FloatBuffer mVertexBuf;
-
-    private int mProgram = -1;
-    private int mVAO = -1;
-    private int mVBO = -1;
     private int mCameraTextureId = 0;
+    private float[] mTextureMatrix = new float[16];
+
     private SurfaceTexture mSurfaceTexture;
 
-    private float[] mMatrix = new float[16];
+    private TextureRender mTextureRender;
+    private FrameBuffer mFrameBuffer;
 
     private int mWidth, mHeight;
 
@@ -87,7 +55,6 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         setEGLContextClientVersion(3);
         setRenderer(this);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-        mVertexBuf = GlUtil.createFloatBuffer(VERTEX_ARRAY);
     }
 
     @Override
@@ -96,35 +63,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         GLES30.glClearColor(0, 0, 0, 1);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
-        mProgram = GlUtil.createProgram(VERTEX_SHADER, FRAGMENT_SHADER);
-
-        int[] vaos = new int[1];
-        GLES30.glGenVertexArrays(1, vaos, 0);
-        mVAO = vaos[0];
-
-        int[] vbos = new int[1];
-        GLES30.glGenBuffers(1, vbos, 0);
-        mVBO = vbos[0];
-
-        GLES30.glBindVertexArray(mVAO);
-
-        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mVBO);
-        GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, mVertexBuf.capacity() * 4, mVertexBuf, GLES30.GL_STATIC_DRAW);
-        GlUtil.checkGlError("glBufferData");
-
-        int posHandle = GLES30.glGetAttribLocation(mProgram, "pos");
-        int texPosHandle = GLES30.glGetAttribLocation(mProgram, "texPos");
-        GlUtil.checkGlError("glGetAttribLocation");
-        GLES30.glVertexAttribPointer(posHandle, 2, GLES30.GL_FLOAT, false, 4 * 4, 0);
-        GlUtil.checkGlError("glVertexAttribPointer1");
-        GLES30.glVertexAttribPointer(texPosHandle, 2, GLES30.GL_FLOAT, false, 4 * 4, 2 * 4);
-        GlUtil.checkGlError("glVertexAttribPointer2");
-        GLES30.glEnableVertexAttribArray(posHandle);
-        GLES30.glEnableVertexAttribArray(texPosHandle);
-        GlUtil.checkGlError("glEnableVertexAttribArray");
-        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0);
-
-        GLES30.glBindVertexArray(0);
+        mTextureRender = new TextureRender();
 
         // 初始化相机纹理
         mCameraTextureId = GlUtil.createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
@@ -143,26 +82,25 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         GLES30.glViewport(0, 0, width, height);
 
         preview();
+
+        mFrameBuffer = new FrameBuffer(width, height);
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        GLES30.glUseProgram(mProgram);
         // 更新相机纹理
         mSurfaceTexture.updateTexImage();
-        mSurfaceTexture.getTransformMatrix(mMatrix);
+        mSurfaceTexture.getTransformMatrix(mTextureMatrix);
 
-        // 相机纹理
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
-        GLES30.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mCameraTextureId);
-        GLES30.glUniform1i(GLES30.glGetUniformLocation(mProgram, "cameraTexture"), 0);
 
-        // 矩阵
-        GLES30.glUniformMatrix4fv(GLES30.glGetUniformLocation(mProgram, "matrix"), 1, false, mMatrix, 0);
-
-        GLES30.glBindVertexArray(mVAO);
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
-        GLES30.glBindVertexArray(0);
+        // 将离屏FBO绑定到当前环境，之后所有的绘制操作都绘制到了FBO
+        mFrameBuffer.bind();
+        // 将相机纹理画在FBO的Texture上
+        mTextureRender.drawTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mCameraTextureId, mTextureMatrix);
+        // 解绑FBO，这样绘制操作重新会画在0号FBO上，也就是GLSurfaceView的屏幕
+        mFrameBuffer.unbind();
+        // 将FBO的纹理画在GLSurfaceView上
+        mTextureRender.drawTexture(GLES30.GL_TEXTURE_2D, mFrameBuffer.getTextureId(), null);
     }
 
     private void preview() {
