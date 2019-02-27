@@ -16,12 +16,6 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="SurfaceView和EGL"
-        android:onClick="gotoEGLSurfaceActivity"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:text="encode测试"
         android:onClick="gotoEncodeAndMuxActivity"/>
     <Button
@@ -32,8 +26,8 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="纹理测试"
-        android:onClick="gotoTextureTestActivity"/>
+        android:text="camera record"
+        android:onClick="gotoCameraRecordActivity"/>
 
 
 </LinearLayout>

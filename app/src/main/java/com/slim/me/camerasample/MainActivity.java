@@ -5,11 +5,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-import com.slim.me.camerasample.record.CameraRecordActivity;
-import com.slim.me.camerasample.encode_test.EncodeAndMuxActivity;
 import com.slim.me.camerasample.camera.preview.CameraPreviewActivity;
-import com.slim.me.camerasample.surfaceview_with_egl.EGLSurfaceActivity;
-import com.slim.me.camerasample.texture_test.TextureTestActivity;
+import com.slim.me.camerasample.encode_test.EncodeAndMuxActivity;
+import com.slim.me.camerasample.record.CameraRecordActivity;
 
 public class MainActivity extends AppCompatActivity  {
 
@@ -26,10 +24,6 @@ public class MainActivity extends AppCompatActivity  {
         startActivity(intent);
     }
 
-    public void gotoEGLSurfaceActivity(View view) {
-        Intent intent = new Intent(this, EGLSurfaceActivity.class);
-        startActivity(intent);
-    }
 
     public void gotoEncodeAndMuxActivity(View view) {
         Intent intent = new Intent(this, EncodeAndMuxActivity.class);
@@ -41,8 +35,8 @@ public class MainActivity extends AppCompatActivity  {
         startActivity(intent);
     }
 
-    public void gotoTextureTestActivity(View view) {
-        Intent intent = new Intent(this, TextureTestActivity.class);
-        startActivity(intent);
+
+    public void gotoCameraRecordActivity(View view) {
+        startActivity(new Intent(this, com.slim.me.camerasample.camera_record.CameraRecordActivity.class));
     }
 }

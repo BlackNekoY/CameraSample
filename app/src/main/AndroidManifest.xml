@@ -20,10 +20,13 @@
         </activity>
 
         <activity android:name=".camera.preview.CameraPreviewActivity"/>
-        <activity android:name=".surfaceview_with_egl.EGLSurfaceActivity"/>
         <activity android:name=".encode_test.EncodeAndMuxActivity"/>
         <activity android:name=".record.CameraRecordActivity"/>
-        <activity android:name=".texture_test.TextureTestActivity"/>
+        <activity android:name=".camera_record.CameraRecordActivity"/>
     </application>
+
+    <uses-feature
+        android:glEsVersion="0x00030000"
+        android:required="true"/>
 
 </manifest>

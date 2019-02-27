@@ -60,7 +60,6 @@ public class CameraHelper {
         if(mIsOpened) {
             return CODE_CAMERA_OPENED;
         }
-        int errCode = CODE_OPEN_SUCCESS;
         try {
             mCurrentCameraId = getCameraId(id);
             if(Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD) {
@@ -68,25 +67,19 @@ public class CameraHelper {
             }else {
                 mCamera = Camera.open();
             }
-            errCode = CODE_OPEN_SUCCESS;
+            if (mCamera == null) {
+                return CODE_OPEN_FAILED;
+            }
+            if (!CameraAbility.getInstance().bindCamera(mCamera)) {
+                return CODE_CAMERA_GET_PARAM;
+            }
+            mIsOpened = true;
+            return CODE_OPEN_SUCCESS;
         }catch (Exception e) {
             e.printStackTrace();
-            errCode = CODE_OPEN_FAILED;
             mCamera = null;
+            return CODE_OPEN_FAILED;
         }
-
-        // 打开失败，直接返回错误码
-        if(null == mCamera) {
-            return errCode;
-        }
-
-        if(!CameraAbility.getInstance().bindCamera(mCamera)) {
-            return CODE_CAMERA_GET_PARAM;
-        }
-
-        // 打开成功
-        mIsOpened = true;
-        return CODE_OPEN_SUCCESS;
     }
 
     private int getCameraId(int id) {
