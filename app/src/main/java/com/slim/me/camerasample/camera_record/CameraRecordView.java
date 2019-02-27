@@ -6,10 +6,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.opengl.EGL14;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
 
@@ -18,6 +20,7 @@ import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.util.GlUtil;
 import com.slim.me.camerasample.util.UiUtil;
 
+import java.io.File;
 import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -41,6 +44,13 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
 
     private int mWidth, mHeight;
 
+    private CameraRecorder mRecorder;
+    private boolean mRecording; // 是否正在录制
+    private EncodeConfig mEncodeConfig;
+    private final int STATE_RECORD_ON = 1;
+    private final int STATE_RECORD_OFF = 2;
+    private int mRecordState = STATE_RECORD_OFF;
+
     public CameraRecordView(Context context) {
         super(context);
         init();
@@ -55,6 +65,13 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         setEGLContextClientVersion(3);
         setRenderer(this);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+
+        mRecorder = new CameraRecorder();
+        mEncodeConfig = new EncodeConfig(new File(Environment.getExternalStorageDirectory(), "slim.mp4").toString(),
+                0, 0,
+                2 * 1024 * 1024,
+                1,
+                30, 0);
     }
 
     @Override
@@ -79,6 +96,9 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         mWidth = width;
         mHeight = height;
+        mEncodeConfig.width = width;
+        mEncodeConfig.height = height;
+
         GLES30.glViewport(0, 0, width, height);
 
         preview();
@@ -101,6 +121,8 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         mFrameBuffer.unbind();
         // 将FBO的纹理画在GLSurfaceView上
         mTextureRender.drawTexture(GLES30.GL_TEXTURE_2D, mFrameBuffer.getTextureId(), null);
+
+        onVideoDrawFrame(mFrameBuffer.getTextureId());
     }
 
     private void preview() {
@@ -132,6 +154,30 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         return true;
     }
 
+    private void onVideoDrawFrame(int textureId) {
+        if (mRecording) {
+            switch (mRecordState) {
+                case STATE_RECORD_OFF:
+                    // 开始录制，设置录制线程的ShareEGLContext为渲染线程的EGLContext，因为textureID为渲染线程的
+                    mEncodeConfig.updateEglContext(EGL14.eglGetCurrentContext());
+                    mRecorder.startRecord(mEncodeConfig);
+                    mRecordState = STATE_RECORD_ON;
+                    break;
+                case STATE_RECORD_ON:
+                    break;
+            }
+            mRecorder.onVideoFrameUpdate(textureId);
+        } else {
+            switch (mRecordState) {
+                case STATE_RECORD_OFF:
+                    break;
+                case STATE_RECORD_ON:
+                    mRecorder.stopRecord();
+                    break;
+            }
+        }
+    }
+
     private void setPreviewSize() {
         CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(mWidth, mHeight,
                 UiUtil.getWindowScreenWidth(getContext()),
@@ -153,6 +199,14 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
         requestRender();
+    }
+
+    public void startRecord(boolean start) {
+        mRecording = start;
+    }
+
+    public boolean isRecording() {
+        return mRecording;
     }
 
 }
