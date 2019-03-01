@@ -12,17 +12,6 @@
         android:layout_height="wrap_content"
         android:text="摄像机预览"
         android:onClick="gotoCameraPreviewActivity"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="encode测试"
-        android:onClick="gotoEncodeAndMuxActivity"/>
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="摄像机录制"
-        android:onClick="gotoCameraMpegActivity"/>
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -24,18 +24,6 @@ public class MainActivity extends AppCompatActivity  {
         startActivity(intent);
     }
 
-
-    public void gotoEncodeAndMuxActivity(View view) {
-        Intent intent = new Intent(this, EncodeAndMuxActivity.class);
-        startActivity(intent);
-    }
-
-    public void gotoCameraMpegActivity(View view) {
-        Intent intent = new Intent(this, CameraRecordActivity.class);
-        startActivity(intent);
-    }
-
-
     public void gotoCameraRecordActivity(View view) {
         startActivity(new Intent(this, com.slim.me.camerasample.camera_record.CameraRecordActivity.class));
     }

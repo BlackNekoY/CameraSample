@@ -25,6 +25,7 @@ public class CameraRecordActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         CameraHelper.getInstance().stopPreview();
+        CameraHelper.getInstance().releaseCamera();
     }
 
     public void startRecord(View view) {
