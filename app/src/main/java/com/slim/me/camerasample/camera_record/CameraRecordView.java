@@ -98,6 +98,13 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         mHeight = height;
         mEncodeConfig.width = width;
         mEncodeConfig.height = height;
+        // 需要保证视频的长宽是偶数
+        if (mEncodeConfig.width % 2 != 0) {
+            mEncodeConfig.width--;
+        }
+        if (mEncodeConfig.height % 2 != 0) {
+            mEncodeConfig.height--;
+        }
 
         GLES30.glViewport(0, 0, width, height);
 
@@ -173,6 +180,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
                     break;
                 case STATE_RECORD_ON:
                     mRecorder.stopRecord();
+                    mRecordState = STATE_RECORD_OFF;
                     break;
             }
         }
