@@ -6,6 +6,9 @@ import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.opengl.EGLSurface;
 import android.opengl.GLES30;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Message;
 import android.util.Log;
 import android.view.Surface;
 
@@ -22,13 +25,15 @@ public class CameraVideoEncoder {
 
     public static final String TAG = "CameraVideoEncoder";
 
+    private static final int MSG_START_RECORD = 1;
+    private static final int MSG_STOP_RECORD = 2;
+    private static final int MSG_VIDEO_FRAME_UPDATE = 3;
+
+
     private String VIDEO_MIME_TYPE = "video/avc";
 
     private MediaCodec mVideoCodec;
-    private MediaMuxer mMuxer;
     private MediaCodec.BufferInfo mVideoBufferInfo;
-    private int mVideoTrackIndex = -1;
-    private boolean mMuxerStarted = false;
     private boolean mEncoding = false;
 
     private Surface mSurface;
@@ -36,10 +41,33 @@ public class CameraVideoEncoder {
     private EGLSurface mEGLSurface;
     private TextureRender mTextureRender;
 
+    // 录制线程相关
+    private HandlerThread mHandlerThread;
+    private Handler mHandler;
+
+    private MuxerWrapper mMuxer;
+
+    public void setMuxer(MuxerWrapper muxer) {
+        mMuxer = muxer;
+    }
 
     public void startEncode(EncodeConfig encodeConfig) {
-        mVideoBufferInfo = new MediaCodec.BufferInfo();
+        // 开启录制线程
+        startEncodeThread();
+        Message.obtain(mHandler, MSG_START_RECORD, encodeConfig).sendToTarget();
+    }
 
+    public void stopEncode() {
+        Message.obtain(mHandler, MSG_STOP_RECORD).sendToTarget();
+    }
+
+    public void onVideoFrameUpdate(int textureId) {
+        Message.obtain(mHandler, MSG_VIDEO_FRAME_UPDATE, new Object[]{textureId}).sendToTarget();
+    }
+
+    private void startEncodeInner(EncodeConfig encodeConfig) {
+
+        mVideoBufferInfo = new MediaCodec.BufferInfo();
         // 配置MediaFormat
         MediaFormat format = MediaFormat.createVideoFormat(VIDEO_MIME_TYPE, encodeConfig.width, encodeConfig.height);
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
@@ -55,13 +83,6 @@ public class CameraVideoEncoder {
         }
         mVideoCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
 
-        try {
-            mMuxer = new MediaMuxer(encodeConfig.outputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-            mMuxer.setOrientationHint(encodeConfig.orientation);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         // 给当前线程创建EGL环境，并用MediaCodec的Surface为基础创建EGLSurface
         mSurface = mVideoCodec.createInputSurface();
         mEglCore = new EglCore(encodeConfig.sharedContext);
@@ -76,13 +97,20 @@ public class CameraVideoEncoder {
         mEncoding = true;
     }
 
-    public void stopEncode() {
+    private void startEncodeThread() {
+        mHandlerThread = new HandlerThread("video_encode");
+        mHandlerThread.start();
+        mHandler = new Handler(mHandlerThread.getLooper(), new EncodeCallback());
+    }
+
+    private void stopEncodeInner() {
         drainEncoder(true);
         mEncoding = false;
         release();
+        mMuxer.releaseVideo();
     }
 
-    public void onVideoFrameUpdate(int textureId) {
+    private void onVideoFrameInner(int textureId) {
         if (mEncoding) {
             // 将Texture内容画在MediaCodec的Surface上
             mTextureRender.drawTexture(GLES30.GL_TEXTURE_2D, textureId, null);
@@ -121,12 +149,8 @@ public class CameraVideoEncoder {
                 // 只有在第一次写入视频时会到这里
                 MediaFormat videoFormat = mVideoCodec.getOutputFormat();
                 Log.d(TAG, "VideoCodec: encoder output format changed: " + videoFormat);
-                mVideoTrackIndex = mMuxer.addTrack(videoFormat);
-
-                if(!mMuxerStarted) {
-                    mMuxerStarted = true;
-                    mMuxer.start();
-                }
+                mMuxer.addVideoTrack(videoFormat);
+                mMuxer.start();
             } else if (encoderStatus < 0) {
                 // 其他未知错误，忽略
                 Log.w(TAG, "VideoCodec: unexpected result from encoder.dequeueOutputBuffer: " + encoderStatus);
@@ -147,11 +171,11 @@ public class CameraVideoEncoder {
                     mVideoBufferInfo.size = 0;
                 }
 
-                if (mVideoBufferInfo.size != 0 && mMuxerStarted) {
+                if (mVideoBufferInfo.size != 0 && mMuxer.isStarted()) {
                     // adjust the ByteBuffer values to match BufferInfo (not needed?)
                     encodedData.position(mVideoBufferInfo.offset);
                     encodedData.limit(mVideoBufferInfo.offset + mVideoBufferInfo.size);
-                    mMuxer.writeSampleData(mVideoTrackIndex, encodedData, mVideoBufferInfo);
+                    mMuxer.writeVideoData(encodedData, mVideoBufferInfo);
 
                     Log.d(TAG, "VideoCodec: sent " + mVideoBufferInfo.size + " bytes to muxer, ts=" +
                             mVideoBufferInfo.presentationTimeUs * 1000);
@@ -186,18 +210,27 @@ public class CameraVideoEncoder {
             mVideoCodec = null;
             Log.d(TAG, "release video codec.");
         }
-        if (mMuxer != null) {
-            try {
-                if (mMuxerStarted) {
-                    mMuxerStarted = false;
-                    mMuxer.stop();
-                }
-                mMuxer.release();
-            } catch (Exception e){
-                Log.e(TAG, "Muxer stop exception:" + e, e);
+    }
+
+    private class EncodeCallback implements Handler.Callback {
+
+        @Override
+        public boolean handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_START_RECORD:
+                    startEncodeInner(((EncodeConfig) msg.obj));
+                    break;
+                case MSG_STOP_RECORD:
+                    stopEncodeInner();
+                    break;
+                case MSG_VIDEO_FRAME_UPDATE:
+                    Object[] data = ((Object[]) msg.obj);
+                    int texId = ((Integer) data[0]);
+                    onVideoFrameInner(texId);
+                    break;
             }
-            mMuxer = null;
-            Log.d(TAG, "release muxer.");
+            return true;
         }
+
     }
 }

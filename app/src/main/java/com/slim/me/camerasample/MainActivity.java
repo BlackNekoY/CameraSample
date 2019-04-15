@@ -6,8 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.slim.me.camerasample.camera.preview.CameraPreviewActivity;
-import com.slim.me.camerasample.encode_test.EncodeAndMuxActivity;
-import com.slim.me.camerasample.record.CameraRecordActivity;
 
 public class MainActivity extends AppCompatActivity  {
 
