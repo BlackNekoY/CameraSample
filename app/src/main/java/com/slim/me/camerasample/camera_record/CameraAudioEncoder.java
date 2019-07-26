@@ -28,7 +28,7 @@ public class CameraAudioEncoder {
     private AudioEncodeThread mThread;
     private AudioRecord mAudioRecord;
     private int mBufferSize;
-    private boolean mIsRecording;
+    private volatile boolean mIsRecording;
 
     private MuxerWrapper mMuxer;
 
@@ -43,6 +43,7 @@ public class CameraAudioEncoder {
     }
 
     public void stopEncode() {
+        Log.d(TAG, "stopEncode");
         mIsRecording = false;
     }
 
@@ -206,7 +207,9 @@ public class CameraAudioEncoder {
             }
 
             // 退出录制 释放资源
+            drainEncoder(true);
             release();
+            mMuxer.releaseAudio();
         }
     }
 
