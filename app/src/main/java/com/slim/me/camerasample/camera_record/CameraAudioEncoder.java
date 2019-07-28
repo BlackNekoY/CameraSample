@@ -88,31 +88,21 @@ public class CameraAudioEncoder {
                 mAudioCodec.queueInputBuffer(inputBufferIndex, 0, readSize, audioAbsolutePtsUs, 0);
             }
         }
-        drainEncoder(false);
+        drainEncoder();
     }
 
-    private void drainEncoder(boolean endOfStream) {
+    /**
+     * while true循环，从OutputBuffer中取数据写入Muxer
+     */
+    private void drainEncoder() {
         final int TIMEOUT_USEC = 10000;
-//        if (endOfStream) {
-//            mAudioCodec.signalEndOfInputStream();
-//        }
-        // 有一些机器，signalEndOfInputStream之后一直收不到BUFFER_FLAG_END_OF_STREAM，导致录制无法结束。这里添加一个计数，如果连续100次dequeueOutputBuffer还没有结束，就直接抛出异常。
-        int endTryTimes = 0;
         ByteBuffer[] encoderOutputBuffers = mAudioCodec.getOutputBuffers();
         while (true) {
             int encoderStatus = mAudioCodec.dequeueOutputBuffer(mAudioBuffInfo, TIMEOUT_USEC);
             if (encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
-                // 当前队列数据已处理完，等待surface更新，跳出循环。
-                if (!endOfStream) {
-                    Log.d(TAG, "VideoCodec: no output available yet");
-                    break;      // out of while
-                } else {
-                    Log.d(TAG, "VideoCodec: no output available, spinning to await EOS");
-                    endTryTimes++;
-                    if (endTryTimes > 100) {
-                        throw new RuntimeException("VideoCodec: Encoder is not stopped after dequeue 100 times.");
-                    }
-                }
+                // 当前队列数据已处理完，跳出循环。
+                Log.d(TAG, "VideoCodec: no output available yet");
+                break;      // out of while
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
                 // not expected for an encoder
                 encoderOutputBuffers = mAudioCodec.getOutputBuffers();
@@ -127,8 +117,6 @@ public class CameraAudioEncoder {
                 Log.w(TAG, "VideoCodec: unexpected result from encoder.dequeueOutputBuffer: " + encoderStatus);
             } else {
                 // 如果有收到surface更新，就将endTryTimes清0。
-                endTryTimes = 0;
-
                 ByteBuffer encodedData = encoderOutputBuffers[encoderStatus];
                 if (encodedData == null) {
                     throw new RuntimeException("VideoCodec: encoderOutputBuffer " + encoderStatus +
@@ -155,11 +143,6 @@ public class CameraAudioEncoder {
                 mAudioCodec.releaseOutputBuffer(encoderStatus, false);
 
                 if ((mAudioBuffInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                    if (!endOfStream) {
-                        Log.w(TAG, "VideoCodec: reached end of stream unexpectedly");
-                    } else {
-                        Log.d(TAG, "VideoCodec: end of stream reached");
-                    }
                     break;
                 }
             }
@@ -207,7 +190,6 @@ public class CameraAudioEncoder {
             }
 
             // 退出录制 释放资源
-            drainEncoder(true);
             release();
             mMuxer.releaseAudio();
         }
