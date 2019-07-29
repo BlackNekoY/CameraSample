@@ -318,54 +318,6 @@ public class CameraHelper {
         return false;
     }
 
-
-    /**
-     * 通过想要的宽高和屏幕宽高，得到最合适的pictureSize和previewSize，只有二者都存在才会返回值，其他返回null
-     * @param wantedWidth
-     * @param wantedHeight
-     * @param screenWidth
-     * @param screenHeight
-     * @return CustomSize[0]是pictureSize，CustomSize[1]是previewSize
-     */
-    public CustomSize[] getMatchedPreviewPictureSize(int width, int height) {
-        // 先获取支持的Size
-        List<Camera.Size> supportPictureSizes = CameraAbility.getInstance().getPictureSizes();
-        List<Camera.Size> supportPreviewSizes = CameraAbility.getInstance().getPreviewSizes();
-
-        if(supportPictureSizes == null || supportPreviewSizes == null
-                || supportPictureSizes.isEmpty() || supportPreviewSizes.isEmpty()) {
-            return null;
-        }
-
-        // 先找到和宽高比一致的sizes
-        int max = Math.max(width, height);
-        int min = Math.min(width, height);
-        float ratio = (float) max / min;
-
-        // 和屏幕宽高比一致的PictureSize
-        List<Camera.Size> matchedWantedSizeRatioPictureList = getMatchedRatioSize(supportPictureSizes, ratio);
-        // 和屏幕宽高比一致的PreviewSize
-        List<Camera.Size> matchedWantedSizeRatioPreviewList = getMatchedRatioSize(supportPreviewSizes, ratio);
-
-        CustomSize[] matchedSize = new CustomSize[2];
-
-        if (matchedWantedSizeRatioPictureList != null && !matchedWantedSizeRatioPictureList.isEmpty()) {
-            Camera.Size pictureSize = getBestMatchedSize(matchedWantedSizeRatioPictureList, width, height, 0.3f, 0.2f);
-            if (pictureSize != null) {
-                matchedSize[0] = new CustomSize(pictureSize.width, pictureSize.height);
-            }
-        }
-
-        if (matchedWantedSizeRatioPreviewList != null && !matchedWantedSizeRatioPreviewList.isEmpty()) {
-            Camera.Size previewSize = getBestMatchedSize(matchedWantedSizeRatioPreviewList, width, height, 1.5f, 0.2f);
-            if (previewSize != null) {
-                matchedSize[1] = new CustomSize(previewSize.width, previewSize.height);
-            }
-        }
-
-        return matchedSize;
-    }
-
     public CustomSize getMatchedPreviewSize(int width, int height) {
         // 先获取支持的Size
         List<Camera.Size> supportPreviewSizes = CameraAbility.getInstance().getPreviewSizes();
