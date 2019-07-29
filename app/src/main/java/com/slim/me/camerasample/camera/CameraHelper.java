@@ -327,7 +327,7 @@ public class CameraHelper {
      * @param screenHeight
      * @return CustomSize[0]是pictureSize，CustomSize[1]是previewSize
      */
-    public CustomSize[] getMatchedPreviewPictureSize(int wantedWidth, int wantedHeight, int screenWidth, int screenHeight) {
+    public CustomSize[] getMatchedPreviewPictureSize(int width, int height) {
         // 先获取支持的Size
         List<Camera.Size> supportPictureSizes = CameraAbility.getInstance().getPictureSizes();
         List<Camera.Size> supportPreviewSizes = CameraAbility.getInstance().getPreviewSizes();
@@ -337,31 +337,87 @@ public class CameraHelper {
             return null;
         }
 
-        // 先找到和屏幕宽高比一直的sizes
-        int screenMax = Math.max(screenWidth, screenHeight);
-        int screenMin = Math.min(screenWidth, screenHeight);
-        float screenRatio = (float) screenMax / screenMin;
+        // 先找到和宽高比一致的sizes
+        int max = Math.max(width, height);
+        int min = Math.min(width, height);
+        float ratio = (float) max / min;
 
         // 和屏幕宽高比一致的PictureSize
-        List<Camera.Size> matchedWantedSizeRatioPictureList = getMatchedRatioSize(supportPictureSizes, screenRatio);
+        List<Camera.Size> matchedWantedSizeRatioPictureList = getMatchedRatioSize(supportPictureSizes, ratio);
         // 和屏幕宽高比一致的PreviewSize
-        List<Camera.Size> matchedWantedSizeRatioPreviewList = getMatchedRatioSize(supportPreviewSizes, screenRatio);
+        List<Camera.Size> matchedWantedSizeRatioPreviewList = getMatchedRatioSize(supportPreviewSizes, ratio);
 
-        if(matchedWantedSizeRatioPictureList != null && !matchedWantedSizeRatioPictureList.isEmpty()
-                && matchedWantedSizeRatioPreviewList != null && !matchedWantedSizeRatioPreviewList.isEmpty()) {
-            // 找出和屏幕一致的Size后，继续去找和wanted相匹配的最佳的Size
-            Camera.Size pictureSize = getBestMatchedSize(matchedWantedSizeRatioPictureList, wantedWidth, wantedHeight, 0.3f, 0.2f);
-            Camera.Size previewSize = getBestMatchedSize(matchedWantedSizeRatioPreviewList, wantedWidth, wantedHeight, 1.5f, 0.2f);
+        CustomSize[] matchedSize = new CustomSize[2];
 
-            if(pictureSize != null && previewSize != null) {
-                CustomSize[] matchedSize = new CustomSize[2];
+        if (matchedWantedSizeRatioPictureList != null && !matchedWantedSizeRatioPictureList.isEmpty()) {
+            Camera.Size pictureSize = getBestMatchedSize(matchedWantedSizeRatioPictureList, width, height, 0.3f, 0.2f);
+            if (pictureSize != null) {
                 matchedSize[0] = new CustomSize(pictureSize.width, pictureSize.height);
-                matchedSize[1] = new CustomSize(previewSize.width, previewSize.height);
-                return matchedSize;
             }
         }
+
+        if (matchedWantedSizeRatioPreviewList != null && !matchedWantedSizeRatioPreviewList.isEmpty()) {
+            Camera.Size previewSize = getBestMatchedSize(matchedWantedSizeRatioPreviewList, width, height, 1.5f, 0.2f);
+            if (previewSize != null) {
+                matchedSize[1] = new CustomSize(previewSize.width, previewSize.height);
+            }
+        }
+
+        return matchedSize;
+    }
+
+    public CustomSize getMatchedPreviewSize(int width, int height) {
+        // 先获取支持的Size
+        List<Camera.Size> supportPreviewSizes = CameraAbility.getInstance().getPreviewSizes();
+
+        if(supportPreviewSizes == null || supportPreviewSizes.isEmpty()) {
+            return null;
+        }
+
+        // 先找到和宽高比一致的sizes
+        int max = Math.max(width, height);
+        int min = Math.min(width, height);
+        float ratio = (float) max / min;
+
+        // 和屏幕宽高比一致的PreviewSize
+        List<Camera.Size> matchedWantedSizeRatioPreviewList = getMatchedRatioSize(supportPreviewSizes, ratio);
+
+        if (matchedWantedSizeRatioPreviewList != null && !matchedWantedSizeRatioPreviewList.isEmpty()) {
+            Camera.Size previewSize = getBestMatchedSize(matchedWantedSizeRatioPreviewList, width, height, 1.5f, 0.2f);
+            if (previewSize != null) {
+                return new CustomSize(previewSize.width, previewSize.height);
+            }
+        }
+
         return null;
     }
+
+    public CustomSize getMatchedPictureSize(int width, int height) {
+        // 先获取支持的Size
+        List<Camera.Size> supportPictureSizes = CameraAbility.getInstance().getPictureSizes();
+
+        if(supportPictureSizes == null || supportPictureSizes.isEmpty()) {
+            return null;
+        }
+
+        // 先找到和宽高比一致的sizes
+        int max = Math.max(width, height);
+        int min = Math.min(width, height);
+        float ratio = (float) max / min;
+
+        // 和屏幕宽高比一致的PictureSize
+        List<Camera.Size> matchedWantedSizeRatioPictureList = getMatchedRatioSize(supportPictureSizes, ratio);
+
+        if (matchedWantedSizeRatioPictureList != null && !matchedWantedSizeRatioPictureList.isEmpty()) {
+            Camera.Size pictureSize = getBestMatchedSize(matchedWantedSizeRatioPictureList, width, height, 0.3f, 0.2f);
+            if (pictureSize != null) {
+                return new CustomSize(pictureSize.width, pictureSize.height);
+            }
+        }
+
+        return null;
+    }
+
 
     /**
      * 从sizeList里，找出和width/height最接近的size

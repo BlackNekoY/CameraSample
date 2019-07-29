@@ -24,11 +24,13 @@ public class TexturePreviewContext extends PreviewContext implements TextureView
     }
 
     private void setupCameraParams(int width, int height) {
-        CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
-                UiUtil.getWindowScreenWidth(context), UiUtil.getWindowScreenHeight(context));
-        if(sizes != null) {
-            CameraHelper.getInstance().setPictureSize(sizes[0]);
-            CameraHelper.getInstance().setPreviewSize(sizes[1]);
+        CameraHelper.CustomSize pictureSize = CameraHelper.getInstance().getMatchedPictureSize(width, height);
+        CameraHelper.CustomSize previewSize = CameraHelper.getInstance().getMatchedPreviewSize(width, height);
+        if (pictureSize != null) {
+            CameraHelper.getInstance().setPictureSize(pictureSize);
+        }
+        if (previewSize != null) {
+            CameraHelper.getInstance().setPreviewSize(previewSize);
         }
         CameraHelper.getInstance().setPreviewFormat(ImageFormat.YV12);
         CameraHelper.getInstance().setDisplayOrientation(90);
@@ -50,13 +52,14 @@ public class TexturePreviewContext extends PreviewContext implements TextureView
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
         Log.d(TAG, "onSurfaceTextureSizeChanged");
         CameraHelper.getInstance().stopPreview();
-        CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
-                UiUtil.getWindowScreenWidth(context), UiUtil.getWindowScreenHeight(context));
-        if(sizes != null) {
-            CameraHelper.getInstance().setPictureSize(sizes[0]);
-            CameraHelper.getInstance().setPreviewSize(sizes[1]);
+        CameraHelper.CustomSize pictureSize = CameraHelper.getInstance().getMatchedPictureSize(width, height);
+        CameraHelper.CustomSize previewSize = CameraHelper.getInstance().getMatchedPreviewSize(width, height);
+        if (pictureSize != null) {
+            CameraHelper.getInstance().setPictureSize(pictureSize);
         }
-
+        if (previewSize != null) {
+            CameraHelper.getInstance().setPreviewSize(previewSize);
+        }
         CameraHelper.getInstance().setSurfaceTexture(surface);
         CameraHelper.getInstance().setPreViewCallback(this, true);
 

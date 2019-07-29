@@ -50,19 +50,13 @@ public class SurfacePreviewContext extends PreviewContext implements SurfaceHold
         }
 
         CameraHelper.getInstance().stopPreview();
-        CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(width, height,
-                UiUtil.getWindowScreenWidth(context), UiUtil.getWindowScreenHeight(context));
-        if(sizes != null) {
-            Camera.Parameters param = CameraHelper.getInstance().getCameraParameters();
-            if(param != null) {
-                CameraHelper.CustomSize pictureSize = sizes[0];
-                CameraHelper.CustomSize previewSize = sizes[1];
-
-                param.setPictureSize(pictureSize.width, pictureSize.height);
-                param.setPreviewSize(previewSize.width, previewSize.height);
-
-                CameraHelper.getInstance().setCameraParameters(param);
-            }
+        CameraHelper.CustomSize pictureSize = CameraHelper.getInstance().getMatchedPictureSize(width, height);
+        CameraHelper.CustomSize previewSize = CameraHelper.getInstance().getMatchedPreviewSize(width, height);
+        if (pictureSize != null) {
+            CameraHelper.getInstance().setPictureSize(pictureSize);
+        }
+        if (previewSize != null) {
+            CameraHelper.getInstance().setPreviewSize(previewSize);
         }
         CameraHelper.getInstance().setSurfaceHolder(holder);
         CameraHelper.getInstance().setPreViewCallback(this, false);

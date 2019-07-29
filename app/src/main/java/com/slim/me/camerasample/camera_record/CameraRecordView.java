@@ -134,6 +134,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
 
     private void preview() {
         CameraHelper.getInstance().stopPreview();
+        CameraHelper.getInstance().setDisplayOrientation(90);
         setPreviewSize();
         CameraHelper.getInstance().setSurfaceTexture(mSurfaceTexture);
         CameraHelper.getInstance().startPreview();
@@ -187,20 +188,13 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
     }
 
     private void setPreviewSize() {
-        CameraHelper.CustomSize[] sizes = CameraHelper.getInstance().getMatchedPreviewPictureSize(mWidth, mHeight,
-                UiUtil.getWindowScreenWidth(getContext()),
-                UiUtil.getWindowScreenHeight(getContext()));
-        if(sizes != null) {
-            Camera.Parameters param = CameraHelper.getInstance().getCameraParameters();
-            if(param != null) {
-                CameraHelper.CustomSize pictureSize = sizes[0];
-                CameraHelper.CustomSize previewSize = sizes[1];
-
-                param.setPictureSize(pictureSize.width, pictureSize.height);
-                param.setPreviewSize(previewSize.width, previewSize.height);
-
-                CameraHelper.getInstance().setCameraParameters(param);
-            }
+        CameraHelper.CustomSize pictureSize = CameraHelper.getInstance().getMatchedPictureSize(mWidth, mHeight);
+        CameraHelper.CustomSize previewSize = CameraHelper.getInstance().getMatchedPreviewSize(mWidth, mHeight);
+        if (pictureSize != null) {
+            CameraHelper.getInstance().setPictureSize(pictureSize);
+        }
+        if (previewSize != null) {
+            CameraHelper.getInstance().setPreviewSize(previewSize);
         }
     }
 
