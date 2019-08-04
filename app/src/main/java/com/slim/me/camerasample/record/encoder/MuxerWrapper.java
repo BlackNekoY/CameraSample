@@ -1,4 +1,4 @@
-package com.slim.me.camerasample.camera_record;
+package com.slim.me.camerasample.record.encoder;
 
 import android.media.MediaCodec;
 import android.media.MediaFormat;

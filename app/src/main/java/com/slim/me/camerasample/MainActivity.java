@@ -23,6 +23,6 @@ public class MainActivity extends AppCompatActivity  {
     }
 
     public void gotoCameraRecordActivity(View view) {
-        startActivity(new Intent(this, com.slim.me.camerasample.camera_record.CameraRecordActivity.class));
+        startActivity(new Intent(this, com.slim.me.camerasample.record.CameraRecordActivity.class));
     }
 }

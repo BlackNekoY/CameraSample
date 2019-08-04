@@ -1,4 +1,4 @@
-package com.slim.me.camerasample.camera_record;
+package com.slim.me.camerasample.record.render;
 
 import android.opengl.GLES30;
 
@@ -15,9 +15,6 @@ public class Texture2DRender extends TextureOESRender {
             "uniform sampler2D sTexture; \n" +
             "out vec4 color;\n" +
             "void main() { \n" +
-//            "   vec4 texColor = texture(sTexture, outTexPos);\n" +
-//            "   float averageColor = (texColor.r + texColor.g + texColor.b) / 3.0f; \n" +
-//            "   color = vec4(averageColor, averageColor, averageColor, texColor.a);\n" +
             "   color = texture(sTexture, outTexPos);\n" +
             "} \n";
 

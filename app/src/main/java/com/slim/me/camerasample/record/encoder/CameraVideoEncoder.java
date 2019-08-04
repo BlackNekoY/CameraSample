@@ -1,9 +1,8 @@
-package com.slim.me.camerasample.camera_record;
+package com.slim.me.camerasample.record.encoder;
 
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
-import android.media.MediaMuxer;
 import android.opengl.EGLSurface;
 import android.opengl.GLES30;
 import android.os.Handler;
@@ -12,6 +11,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.Surface;
 
+import com.slim.me.camerasample.record.render.TextureRender;
 import com.slim.me.camerasample.egl.EglCore;
 
 import java.io.IOException;

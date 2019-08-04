@@ -1,8 +1,6 @@
-package com.slim.me.camerasample.camera_record;
+package com.slim.me.camerasample.record;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -10,18 +8,17 @@ import android.opengl.EGL14;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
-import android.opengl.Matrix;
 import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
 
-import com.slim.me.camerasample.camera.CameraAbility;
 import com.slim.me.camerasample.camera.CameraHelper;
+import com.slim.me.camerasample.record.encoder.EncodeConfig;
+import com.slim.me.camerasample.record.render.FrameBuffer;
+import com.slim.me.camerasample.record.render.TextureRender;
 import com.slim.me.camerasample.util.GlUtil;
-import com.slim.me.camerasample.util.UiUtil;
 
 import java.io.File;
-import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;

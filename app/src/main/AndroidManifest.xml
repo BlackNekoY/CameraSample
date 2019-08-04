@@ -20,7 +20,7 @@
         </activity>
 
         <activity android:name=".camera.preview.CameraPreviewActivity"/>
-        <activity android:name=".camera_record.CameraRecordActivity"/>
+        <activity android:name=".record.CameraRecordActivity"/>
     </application>
 
     <uses-feature

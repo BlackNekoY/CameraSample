@@ -25,13 +25,13 @@ public class CameraHelper {
     public static final int CODE_CAMERA_OPENED = 3; // 已经打开了摄像头
     public static final int CODE_CAMERA_GET_PARAM = 4; // 获取CameraParams失败
 
-    private static double ASPECT_TOLERANCE = 0.05f;
+    private static double ASPECT_TOLERANCE = 0.1f;
 
     private static CameraHelper mInstance ;
     private Camera mCamera;
 
-    private boolean mIsOpened;  // 已经打开
-    private boolean mIsPreviewing; //正在预览
+    private volatile boolean mIsOpened;  // 已经打开
+    private volatile boolean mIsPreviewing; //正在预览
 
     private int mCurrentCameraId;
     private int mPreviewFormat; // 帧数据格式
@@ -111,7 +111,6 @@ public class CameraHelper {
             Log.i(TAG, "is previewing, discard setSurfaceHolder.");
             return false;
         }
-
         try {
             mCamera.setPreviewDisplay(holder);
             return true;
@@ -130,7 +129,6 @@ public class CameraHelper {
             Log.i(TAG, "is previewing, refuse setSurfaceTexture.");
             return false;
         }
-
         try {
             mCamera.setPreviewTexture(texture);
             return true;
@@ -144,7 +142,6 @@ public class CameraHelper {
         if(mCamera == null) {
             return false;
         }
-
         try {
             if(useBuffer) {
                 makeSureBuffer();
@@ -180,7 +177,6 @@ public class CameraHelper {
         if(mCamera == null) {
             return false;
         }
-
         try {
             mCamera.addCallbackBuffer(buffer);
             return true;
@@ -200,7 +196,6 @@ public class CameraHelper {
             Log.e(TAG, "is previewing. refuse startPreview.");
             return false;
         }
-
         try {
             mCamera.startPreview();
             mIsPreviewing = true;
@@ -224,7 +219,6 @@ public class CameraHelper {
             Log.e(TAG, "is not previewing. refuse stopPreview");
             return false;
         }
-
         try {
             mCamera.stopPreview();
             /**

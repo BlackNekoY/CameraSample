@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".camera_record.CameraRecordActivity">
+    tools:context=".record.CameraRecordActivity">
 
-    <com.slim.me.camerasample.camera_record.CameraRecordView
+    <com.slim.me.camerasample.record.CameraRecordView
         android:id="@+id/record_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

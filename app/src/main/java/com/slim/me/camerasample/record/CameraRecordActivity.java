@@ -1,4 +1,4 @@
-package com.slim.me.camerasample.camera_record;
+package com.slim.me.camerasample.record;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;

@@ -1,6 +1,11 @@
-package com.slim.me.camerasample.camera_record;
+package com.slim.me.camerasample.record;
 
 import android.media.MediaMuxer;
+
+import com.slim.me.camerasample.record.encoder.CameraAudioEncoder;
+import com.slim.me.camerasample.record.encoder.CameraVideoEncoder;
+import com.slim.me.camerasample.record.encoder.EncodeConfig;
+import com.slim.me.camerasample.record.encoder.MuxerWrapper;
 
 import java.io.IOException;
 
