@@ -15,7 +15,11 @@ import android.util.Log;
 import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.record.encoder.EncodeConfig;
 import com.slim.me.camerasample.record.render.FrameBuffer;
-import com.slim.me.camerasample.record.render.TextureRender;
+import com.slim.me.camerasample.record.render.Texture2DRender;
+import com.slim.me.camerasample.record.render.filter.BaseFilter;
+import com.slim.me.camerasample.record.render.filter.BlackWhiteFilter;
+import com.slim.me.camerasample.record.render.filter.EmptyFilter;
+import com.slim.me.camerasample.record.render.filter.OESFilter;
 import com.slim.me.camerasample.util.GlUtil;
 
 import java.io.File;
@@ -36,7 +40,10 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
 
     private SurfaceTexture mSurfaceTexture;
 
-    private TextureRender mTextureRender;
+    private Texture2DRender mTexture2DRender;
+    private BaseFilter mEmptyFilter;
+    private BaseFilter mOESFilter;
+    private BaseFilter mBlackWhiteFilter;
     private FrameBuffer mFrameBuffer;
 
     private int mWidth, mHeight;
@@ -77,7 +84,8 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         GLES30.glClearColor(0, 0, 0, 1);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
-        mTextureRender = new TextureRender();
+        mTexture2DRender = new Texture2DRender();
+        initFilters();
 
         // 初始化相机纹理
         mCameraTextureId = GlUtil.createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
@@ -116,17 +124,21 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         mSurfaceTexture.updateTexImage();
         mSurfaceTexture.getTransformMatrix(mTextureMatrix);
 
-
-        // 将离屏FBO绑定到当前环境，之后所有的绘制操作都绘制到了FBO
         mFrameBuffer.bind();
-        // 将相机纹理画在FBO的Texture上
-        mTextureRender.drawTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mCameraTextureId, mTextureMatrix);
-        // 解绑FBO，这样绘制操作重新会画在0号FBO上，也就是GLSurfaceView的屏幕
+        mTexture2DRender.setFilter(mOESFilter);
+        mTexture2DRender.drawTexture(mCameraTextureId, mTextureMatrix);
         mFrameBuffer.unbind();
-        // 将FBO的纹理画在GLSurfaceView上
-        mTextureRender.drawTexture(GLES30.GL_TEXTURE_2D, mFrameBuffer.getTextureId(), null);
+
+        mTexture2DRender.setFilter(mEmptyFilter);
+        mTexture2DRender.drawTexture(mFrameBuffer.getTextureId(), null);
 
         onVideoDrawFrame(mFrameBuffer.getTextureId());
+    }
+
+    private void initFilters() {
+        mEmptyFilter = new EmptyFilter();
+        mOESFilter = new OESFilter();
+        mBlackWhiteFilter = new BlackWhiteFilter();
     }
 
     private void preview() {

@@ -12,10 +12,8 @@ import java.nio.FloatBuffer;
  * 摄像机纹理渲染器
  */
 public class TextureOESRender {
-    /**
-     * 默认顶点着色器，OES和2D是一样的
-     */
-    protected final String VERTEX_SHADER =
+
+    private static final String VERTEX_SHADER =
             "#version 300 es\n" +
             "layout(location = 0) in vec2 pos;\n" +
             "layout(location = 1) in vec2 texPos;\n" +
@@ -26,10 +24,8 @@ public class TextureOESRender {
             "   vec4 texTranformPos = textureMatrix * vec4(texPos, 0, 1); \n" +
             "   outTexPos = vec2(texTranformPos.x, texTranformPos.y);\n" +
             "}\n";
-    /**
-     * OES的片元着色器
-     */
-    protected final String FRAGMENT_SHADER =
+
+    private static final String FRAGMENT_SHADER =
             "#version 300 es\n" +
             "#extension GL_OES_EGL_image_external_essl3 : require\n" +
             "precision mediump float;\n" +
@@ -57,22 +53,16 @@ public class TextureOESRender {
     private int mVAO = -1;
     private int mVBO = -1;
 
-    protected int mTextureType;
-
     /**
      * 必须在GL线程调用，初始化program
      */
     public TextureOESRender() {
-        mTextureType = GLES11Ext.GL_TEXTURE_EXTERNAL_OES;
-        setShaders(VERTEX_SHADER, FRAGMENT_SHADER);
+        mVertexShader = VERTEX_SHADER;
+        mFragmentShader = FRAGMENT_SHADER;
+        init();
     }
 
-    protected void setShaders(String vertexShader, String fragmentShader) {
-        mVertexShader = vertexShader;
-        mFragmentShader = fragmentShader;
-    }
-
-    public void init() {
+    private void init() {
         mVertexBuf = GlUtil.createFloatBuffer(VERTEX_ARRAY);
 
         mProgram = GlUtil.createProgram(mVertexShader, mFragmentShader);
@@ -114,7 +104,7 @@ public class TextureOESRender {
         GLES30.glUseProgram(mProgram);
         // 相机纹理
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
-        GLES30.glBindTexture(mTextureType, textureId);
+        GLES30.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
         GLES30.glUniform1i(GLES30.glGetUniformLocation(mProgram, "sTexture"), 0);
 
         // 矩阵

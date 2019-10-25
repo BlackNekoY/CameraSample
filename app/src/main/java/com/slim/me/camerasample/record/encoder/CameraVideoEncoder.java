@@ -11,8 +11,9 @@ import android.os.Message;
 import android.util.Log;
 import android.view.Surface;
 
-import com.slim.me.camerasample.record.render.TextureRender;
 import com.slim.me.camerasample.egl.EglCore;
+import com.slim.me.camerasample.record.render.Texture2DRender;
+import com.slim.me.camerasample.record.render.filter.EmptyFilter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -39,7 +40,7 @@ public class CameraVideoEncoder {
     private Surface mSurface;
     private EglCore mEglCore;
     private EGLSurface mEGLSurface;
-    private TextureRender mTextureRender;
+    private Texture2DRender mTextureRender;
 
     // 录制线程相关
     private HandlerThread mHandlerThread;
@@ -90,7 +91,8 @@ public class CameraVideoEncoder {
         mEglCore.makeCurrent(mEGLSurface);
 
         // 设置渲染器
-        mTextureRender = new TextureRender();
+        mTextureRender = new Texture2DRender();
+        mTextureRender.setFilter(new EmptyFilter());
 
         // start
         mVideoCodec.start();
@@ -113,7 +115,7 @@ public class CameraVideoEncoder {
     private void onVideoFrameInner(int textureId) {
         if (mEncoding) {
             // 将Texture内容画在MediaCodec的Surface上
-            mTextureRender.drawTexture(GLES30.GL_TEXTURE_2D, textureId, null);
+            mTextureRender.drawTexture(textureId, null);
             mEglCore.swapBuffers(mEGLSurface);
             // 开始编码
             drainEncoder(false);
