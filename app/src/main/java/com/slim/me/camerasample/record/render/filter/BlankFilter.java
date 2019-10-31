@@ -7,7 +7,7 @@ import com.slim.me.camerasample.util.GlUtil;
 /**
  * 没有任何效果的Filter，仅仅只是把输入的Texture渲染出来
  */
-public class EmptyFilter extends BaseFilter {
+public class BlankFilter extends BaseFilter {
 
     protected static final String VERTEX_SHADER =
             "#version 300 es\n" +
@@ -53,7 +53,7 @@ public class EmptyFilter extends BaseFilter {
     }
 
     @Override
-    protected void onDrawFrame(int textureId, float[] textureMatrix) {
+    protected void onDrawFrame(int textureId, float[] cameraMatrix, float[] textureMatrix) {
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
         GLES30.glUniform1i(GLES30.glGetUniformLocation(getProgram(), "sTexture"), 0);

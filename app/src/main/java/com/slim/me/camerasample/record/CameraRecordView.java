@@ -14,15 +14,16 @@ import android.util.Log;
 
 import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.record.encoder.EncodeConfig;
-import com.slim.me.camerasample.record.render.FrameBuffer;
 import com.slim.me.camerasample.record.render.Texture2DRender;
 import com.slim.me.camerasample.record.render.filter.BaseFilter;
 import com.slim.me.camerasample.record.render.filter.BlackWhiteFilter;
-import com.slim.me.camerasample.record.render.filter.EmptyFilter;
+import com.slim.me.camerasample.record.render.filter.BlankFilter;
 import com.slim.me.camerasample.record.render.filter.OESFilter;
 import com.slim.me.camerasample.util.GlUtil;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -36,15 +37,12 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
     public static final String TAG = "CameraRecordView";
 
     private int mCameraTextureId = 0;
-    private float[] mTextureMatrix = new float[16];
+    private float[] mCameraMatrix = new float[16];
 
     private SurfaceTexture mSurfaceTexture;
 
     private Texture2DRender mTexture2DRender;
-    private BaseFilter mEmptyFilter;
-    private BaseFilter mOESFilter;
-    private BaseFilter mBlackWhiteFilter;
-    private FrameBuffer mFrameBuffer;
+    private List<BaseFilter> mFilters = new ArrayList<>();
 
     private int mWidth, mHeight;
 
@@ -84,8 +82,10 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         GLES30.glClearColor(0, 0, 0, 1);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
+        // 初始化滤镜 渲染器
         mTexture2DRender = new Texture2DRender();
         initFilters();
+        mTexture2DRender.setFilters(mFilters);
 
         // 初始化相机纹理
         mCameraTextureId = GlUtil.createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
@@ -114,31 +114,23 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         GLES30.glViewport(0, 0, width, height);
 
         preview();
-
-        mFrameBuffer = new FrameBuffer(width, height);
+        mTexture2DRender.onSizeChanged(width, height);
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
         // 更新相机纹理
         mSurfaceTexture.updateTexImage();
-        mSurfaceTexture.getTransformMatrix(mTextureMatrix);
+        mSurfaceTexture.getTransformMatrix(mCameraMatrix);
 
-        mFrameBuffer.bind();
-        mTexture2DRender.setFilter(mOESFilter);
-        mTexture2DRender.drawTexture(mCameraTextureId, mTextureMatrix);
-        mFrameBuffer.unbind();
+        mTexture2DRender.drawTexture(mCameraTextureId, mCameraMatrix, null);
 
-        mTexture2DRender.setFilter(mEmptyFilter);
-        mTexture2DRender.drawTexture(mFrameBuffer.getTextureId(), null);
-
-        onVideoDrawFrame(mFrameBuffer.getTextureId());
+        onVideoDrawFrame(mTexture2DRender.getTextureId());
     }
 
     private void initFilters() {
-        mEmptyFilter = new EmptyFilter();
-        mOESFilter = new OESFilter();
-        mBlackWhiteFilter = new BlackWhiteFilter();
+        mFilters.add(new OESFilter());
+        mFilters.add(new BlackWhiteFilter());
     }
 
     private void preview() {

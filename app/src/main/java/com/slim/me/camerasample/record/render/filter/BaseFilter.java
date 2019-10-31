@@ -19,6 +19,8 @@ public abstract class BaseFilter {
             -1, -1,  0, 0,
             1, -1,   1, 0
     };
+    private static final float[] INITIALIZE_MATRIX = new float[16];
+
     private FloatBuffer mVertexBuf = GlUtil.createFloatBuffer(VERTEX_ARRAY);
     private String mVertexShader;
     private String mFragmentShader;
@@ -26,6 +28,10 @@ public abstract class BaseFilter {
     private int mProgram = -1;
     private int mVAO = -1;
     private int mVBO = -1;
+
+    static {
+        Matrix.setIdentityM(INITIALIZE_MATRIX, 0);
+    }
 
     public BaseFilter() {
         init();
@@ -71,14 +77,12 @@ public abstract class BaseFilter {
         return mProgram;
     }
 
-    public final void draw(int textureId, float[] textureMatrix) {
-        if (textureMatrix == null) {
-            textureMatrix = new float[16];
-            Matrix.setIdentityM(textureMatrix, 0);
-        }
+    public final void draw(int textureId, float[] cameraMatrix, float[] textureMatrix) {
         GLES30.glUseProgram(mProgram);
 
-        onDrawFrame(textureId, textureMatrix);
+        onDrawFrame(textureId,
+                cameraMatrix != null? cameraMatrix : INITIALIZE_MATRIX,
+                textureMatrix != null? textureMatrix : INITIALIZE_MATRIX);
 
         GLES30.glBindVertexArray(mVAO);
         GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
@@ -100,5 +104,5 @@ public abstract class BaseFilter {
      * @param textureId 纹理ID
      * @param textureMatrix 纹理矩阵
      */
-    protected abstract void onDrawFrame(int textureId, float[] textureMatrix);
+    protected abstract void onDrawFrame(int textureId, float[] cameraMatrix, float[] textureMatrix);
 }

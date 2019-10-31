@@ -69,4 +69,12 @@ public class FrameBuffer {
         return mTextureId;
     }
 
+    public int getFbo() {
+        return mFbo;
+    }
+
+    public int getRbo() {
+        return mRbo;
+    }
+
 }

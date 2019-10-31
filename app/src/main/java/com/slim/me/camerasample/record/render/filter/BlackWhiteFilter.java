@@ -1,6 +1,6 @@
 package com.slim.me.camerasample.record.render.filter;
 
-public class BlackWhiteFilter extends EmptyFilter {
+public class BlackWhiteFilter extends BlankFilter {
 
     private static final String FRAGMENT_SHADER =
             "#version 300 es\n" +
@@ -17,7 +17,7 @@ public class BlackWhiteFilter extends EmptyFilter {
 
     @Override
     protected void onInit() {
-        setShader(EmptyFilter.VERTEX_SHADER, FRAGMENT_SHADER);
+        setShader(BlankFilter.VERTEX_SHADER, FRAGMENT_SHADER);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class BlackWhiteFilter extends EmptyFilter {
     }
 
     @Override
-    protected void onDrawFrame(int textureId, float[] textureMatrix) {
-        super.onDrawFrame(textureId, textureMatrix);
+    protected void onDrawFrame(int textureId, float[] cameraMatrix, float[] textureMatrix) {
+        super.onDrawFrame(textureId, cameraMatrix, textureMatrix);
     }
 }
