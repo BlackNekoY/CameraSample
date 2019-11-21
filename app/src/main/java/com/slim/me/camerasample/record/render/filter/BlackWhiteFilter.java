@@ -1,5 +1,7 @@
 package com.slim.me.camerasample.record.render.filter;
 
+import android.support.annotation.NonNull;
+
 public class BlackWhiteFilter extends BlankFilter {
 
     private static final String FRAGMENT_SHADER =
@@ -16,17 +18,13 @@ public class BlackWhiteFilter extends BlankFilter {
                     "} \n";
 
     @Override
-    protected void onInit() {
-        setShader(BlankFilter.VERTEX_SHADER, FRAGMENT_SHADER);
-    }
-
-    @Override
-    protected void onBindPointer() {
-        super.onBindPointer();
-    }
-
-    @Override
     protected void onDrawFrame(int textureId, float[] cameraMatrix, float[] textureMatrix) {
         super.onDrawFrame(textureId, cameraMatrix, textureMatrix);
+    }
+
+    @NonNull
+    @Override
+    public String getFragmentShader() {
+        return FRAGMENT_SHADER;
     }
 }

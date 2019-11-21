@@ -1,6 +1,7 @@
 package com.slim.me.camerasample.record.render.filter;
 
 import android.opengl.GLES30;
+import android.support.annotation.NonNull;
 
 import com.slim.me.camerasample.util.GlUtil;
 
@@ -8,6 +9,14 @@ import com.slim.me.camerasample.util.GlUtil;
  * 没有任何效果的Filter，仅仅只是把输入的Texture渲染出来
  */
 public class BlankFilter extends BaseFilter {
+
+    private static final float[] VERTEX_ARRAY = {
+            // 位置顶点    // 纹理顶点
+            -1, 1,   0, 1,
+            1, 1,    1, 1,
+            -1, -1,  0, 0,
+            1, -1,   1, 0
+    };
 
     protected static final String VERTEX_SHADER =
             "#version 300 es\n" +
@@ -32,14 +41,8 @@ public class BlankFilter extends BaseFilter {
                     "   color = texture(sTexture, outTexPos);\n" +
                     "} \n";
 
-
     @Override
-    protected void onInit() {
-        setShader(VERTEX_SHADER, FRAGMENT_SHADER);
-    }
-
-    @Override
-    protected void onBindPointer() {
+    protected void onPreDraw() {
         int posHandle = GLES30.glGetAttribLocation(getProgram(), "pos");
         int texPosHandle = GLES30.glGetAttribLocation(getProgram(), "texPos");
         GlUtil.checkGlError("glGetAttribLocation");
@@ -59,5 +62,22 @@ public class BlankFilter extends BaseFilter {
         GLES30.glUniform1i(GLES30.glGetUniformLocation(getProgram(), "sTexture"), 0);
         // 矩阵
         GLES30.glUniformMatrix4fv(GLES30.glGetUniformLocation(getProgram(), "textureMatrix"), 1, false, textureMatrix, 0);
+    }
+
+    @NonNull
+    @Override
+    public String getVertexShader() {
+        return VERTEX_SHADER;
+    }
+
+    @NonNull
+    @Override
+    public String getFragmentShader() {
+        return FRAGMENT_SHADER;
+    }
+
+    @Override
+    protected float[] getVertexArray() {
+        return VERTEX_ARRAY;
     }
 }

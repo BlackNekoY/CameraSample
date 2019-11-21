@@ -2,6 +2,7 @@ package com.slim.me.camerasample.record.render.filter;
 
 import android.opengl.GLES30;
 import android.opengl.Matrix;
+import android.support.annotation.NonNull;
 
 import com.slim.me.camerasample.util.GlUtil;
 
@@ -12,18 +13,7 @@ import java.nio.FloatBuffer;
  */
 public abstract class BaseFilter {
 
-    private static final float[] VERTEX_ARRAY = {
-            // 位置顶点    // 纹理顶点
-            -1, 1,   0, 1,
-            1, 1,    1, 1,
-            -1, -1,  0, 0,
-            1, -1,   1, 0
-    };
     private static final float[] INITIALIZE_MATRIX = new float[16];
-
-    private FloatBuffer mVertexBuf = GlUtil.createFloatBuffer(VERTEX_ARRAY);
-    private String mVertexShader;
-    private String mFragmentShader;
 
     private int mProgram = -1;
     private int mVAO = -1;
@@ -33,7 +23,7 @@ public abstract class BaseFilter {
         Matrix.setIdentityM(INITIALIZE_MATRIX, 0);
     }
 
-    public BaseFilter() {
+    BaseFilter() {
         init();
     }
 
@@ -44,8 +34,9 @@ public abstract class BaseFilter {
      */
     private void init() {
         onInit();
+        FloatBuffer vertexBuffer = GlUtil.createFloatBuffer(getVertexArray());
 
-        mProgram = GlUtil.createProgram(mVertexShader, mFragmentShader);
+        mProgram = GlUtil.createProgram(getVertexShader(), getFragmentShader());
         int[] arr = new int[1];
         // gen VAO
         GLES30.glGenVertexArrays(1, arr, 0);
@@ -57,24 +48,15 @@ public abstract class BaseFilter {
         // bind VAO
         GLES30.glBindVertexArray(mVAO);
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mVBO);
-        GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, mVertexBuf.capacity() * 4, mVertexBuf, GLES30.GL_STATIC_DRAW);
+        GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, vertexBuffer.capacity() * 4, vertexBuffer, GLES30.GL_STATIC_DRAW);
         GlUtil.checkGlError("glBufferData");
 
         // 子类AttribPointer
-        onBindPointer();
+        onPreDraw();
 
         // unbind VAO
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0);
         GLES30.glBindVertexArray(0);
-    }
-
-    protected void setShader(String vertexShader, String fragmentShader) {
-        mVertexShader = vertexShader;
-        mFragmentShader = fragmentShader;
-    }
-
-    protected int getProgram() {
-        return mProgram;
     }
 
     public final void draw(int textureId, float[] cameraMatrix, float[] textureMatrix) {
@@ -89,15 +71,33 @@ public abstract class BaseFilter {
         GLES30.glBindVertexArray(0);
     }
 
-    /**
-     * 子类初始化，在这里设置Shader
-     */
-    protected abstract void onInit();
+    final int getProgram() {
+        return mProgram;
+    }
+
+    protected void onInit(){}
 
     /**
-     * 绑定顶点
+     * 子类返回顶点着色器
      */
-    protected abstract void onBindPointer();
+    @NonNull
+    protected abstract String getVertexShader();
+
+    /**
+     * 子类返回片元着色器
+     */
+    @NonNull
+    protected abstract String getFragmentShader();
+
+    /**
+     * 子类返回顶点数组
+     */
+    protected abstract float[] getVertexArray();
+
+    /**
+     * 子类在渲染前的绑定顶点
+     */
+    protected abstract void onPreDraw();
 
     /**
      * 渲染
