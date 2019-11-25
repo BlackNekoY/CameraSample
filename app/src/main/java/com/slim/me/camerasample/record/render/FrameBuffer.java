@@ -3,7 +3,7 @@ package com.slim.me.camerasample.record.render;
 
 import android.opengl.GLES30;
 
-import com.slim.me.camerasample.util.GlUtil;
+import com.slim.me.camerasample.util.OpenGLUtils;
 
 public class FrameBuffer {
 
@@ -27,7 +27,7 @@ public class FrameBuffer {
         mWidth = width;
         mHeight = height;
         // 创建纹理ID
-        mTextureId = GlUtil.createTexture(GLES30.GL_TEXTURE_2D);
+        mTextureId = OpenGLUtils.createTexture(GLES30.GL_TEXTURE_2D);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTextureId);
         GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, mWidth, mHeight, 0, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, null);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);

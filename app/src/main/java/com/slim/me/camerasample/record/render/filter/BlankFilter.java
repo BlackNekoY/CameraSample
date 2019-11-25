@@ -3,7 +3,6 @@ package com.slim.me.camerasample.record.render.filter;
 import android.opengl.GLES30;
 import android.support.annotation.NonNull;
 
-import com.slim.me.camerasample.util.GlUtil;
 
 /**
  * 没有任何效果的Filter，仅仅只是把输入的Texture渲染出来
@@ -42,17 +41,13 @@ public class BlankFilter extends BaseFilter {
                     "} \n";
 
     @Override
-    protected void onPreDraw() {
+    protected void onBindVAO() {
         int posHandle = GLES30.glGetAttribLocation(getProgram(), "pos");
         int texPosHandle = GLES30.glGetAttribLocation(getProgram(), "texPos");
-        GlUtil.checkGlError("glGetAttribLocation");
         GLES30.glVertexAttribPointer(posHandle, 2, GLES30.GL_FLOAT, false, 4 * 4, 0);
-        GlUtil.checkGlError("glVertexAttribPointer1");
         GLES30.glVertexAttribPointer(texPosHandle, 2, GLES30.GL_FLOAT, false, 4 * 4, 2 * 4);
-        GlUtil.checkGlError("glVertexAttribPointer2");
         GLES30.glEnableVertexAttribArray(posHandle);
         GLES30.glEnableVertexAttribArray(texPosHandle);
-        GlUtil.checkGlError("glEnableVertexAttribArray");
     }
 
     @Override

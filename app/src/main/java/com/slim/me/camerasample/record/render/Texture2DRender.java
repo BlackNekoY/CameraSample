@@ -17,9 +17,12 @@ public class Texture2DRender {
     private BaseFilter mCopyFilter;
     private FrameBuffer[] mFrameBuffers = new FrameBuffer[3];
     private int mCurrentTextureId;
+    private int mSurfaceWidth;
+    private int mSurfaceHeight;
 
     public Texture2DRender() {
         mCopyFilter = new BlankFilter();
+        mCopyFilter.init();
     }
 
     public void drawTexture(int textureId, float[] cameraMatrix, float[] textureMatrix) {
@@ -57,6 +60,8 @@ public class Texture2DRender {
      * call on GL thread
      */
     public void onSizeChanged(final int width, final int height) {
+        mSurfaceWidth = width;
+        mSurfaceHeight = height;
         deleteFrameBuffers();
         for (int i = 0; i < 3 ; i++) {
             mFrameBuffers[i] = new FrameBuffer(width, height);

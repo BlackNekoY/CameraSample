@@ -1,7 +1,6 @@
 package com.slim.me.camerasample.util;
 
 import android.opengl.GLES30;
-import android.opengl.GLUtils;
 import android.util.Log;
 
 import java.nio.ByteBuffer;
@@ -12,9 +11,9 @@ import java.nio.FloatBuffer;
  * Created by slimxu on 2018/1/9.
  */
 
-public class GlUtil {
+public class OpenGLUtils {
 
-    public static final String TAG = "GlUtil";
+    public static final String TAG = "OpenGLUtils";
 
     public static final int SIZEOF_FLOAT = 4;
 
@@ -79,14 +78,14 @@ public class GlUtil {
         int[] textureHandle = new int[1];
 
         GLES30.glGenTextures(1, textureHandle, 0);
-        GlUtil.checkGlError("glGenTextures");
+        OpenGLUtils.checkGlError("glGenTextures");
         GLES30.glBindTexture(textureTarget, textureHandle[0]);
-        GlUtil.checkGlError("glBindTexture " + textureHandle[0]);
+        OpenGLUtils.checkGlError("glBindTexture " + textureHandle[0]);
         GLES30.glTexParameterf(textureTarget, GLES30.GL_TEXTURE_MIN_FILTER, minFilter);
         GLES30.glTexParameterf(textureTarget, GLES30.GL_TEXTURE_MAG_FILTER, magFilter); //线性插值
         GLES30.glTexParameteri(textureTarget, GLES30.GL_TEXTURE_WRAP_S, wrapS);
         GLES30.glTexParameteri(textureTarget, GLES30.GL_TEXTURE_WRAP_T, wrapT);
-        GlUtil.checkGlError("glTexParameter");
+        OpenGLUtils.checkGlError("glTexParameter");
         return textureHandle[0];
     }
 
