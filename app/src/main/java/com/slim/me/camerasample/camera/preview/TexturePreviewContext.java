@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.TextureView;
 
 import com.slim.me.camerasample.camera.CameraHelper;
-import com.slim.me.camerasample.util.UiUtil;
 
 /**
  * Created by Slim on 2017/4/23.

@@ -132,7 +132,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
 
     private void initFilters() {
         mFilters.add(new OESFilter());
-        mFilters.add(new BlackWhiteFilter());
+//        mFilters.add(new BlackWhiteFilter());
         mFilters.add(new WatermarkFilter(BitmapFactory.decodeResource(getContext().getResources(), R.drawable.awesomeface)));
         for (ImageFilter filter : mFilters) {
             filter.init();
@@ -210,12 +210,12 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         requestRender();
     }
 
-    public void startRecord(boolean start) {
-        mRecording = start;
+    public void startRecord() {
+        mRecording = true;
     }
 
-    public boolean isRecording() {
-        return mRecording;
+    public void stopRecord() {
+        mRecording = false;
     }
 
 }
