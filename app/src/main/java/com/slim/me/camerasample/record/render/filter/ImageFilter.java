@@ -11,13 +11,15 @@ import java.nio.FloatBuffer;
 /**
  * 滤镜基类
  */
-public abstract class BaseFilter {
+public abstract class ImageFilter {
 
     private static final float[] INITIALIZE_MATRIX = new float[16];
 
     private int mProgram = -1;
     private int mVAO = -1;
     private int mVBO = -1;
+    private int mOutputWidth;
+    private int mOutputHeight;
 
     static {
         Matrix.setIdentityM(INITIALIZE_MATRIX, 0);
@@ -44,7 +46,6 @@ public abstract class BaseFilter {
         GLES30.glBindVertexArray(mVAO);
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, mVBO);
         GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, vertexBuffer.capacity() * 4, vertexBuffer, GLES30.GL_STATIC_DRAW);
-        OpenGLUtils.checkGlError("glBufferData");
 
         onBindVAO();
 
@@ -60,6 +61,21 @@ public abstract class BaseFilter {
         GLES30.glBindVertexArray(mVAO);
         GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4);
         GLES30.glBindVertexArray(0);
+
+        onAfterDraw(textureId, cameraMatrix, textureMatrix);
+    }
+
+    public final void onOutputSizeChanged(final int width, final int height) {
+        mOutputWidth = width;
+        mOutputHeight = height;
+    }
+
+    int getOutputWidth() {
+        return mOutputWidth;
+    }
+
+    int getOutputHeight() {
+        return mOutputHeight;
     }
 
     final int getProgram() {
@@ -68,32 +84,17 @@ public abstract class BaseFilter {
 
     protected void onInit(){}
 
-    /**
-     * 子类返回顶点着色器
-     */
     @NonNull
     protected abstract String getVertexShader();
 
-    /**
-     * 子类返回片元着色器
-     */
     @NonNull
     protected abstract String getFragmentShader();
 
-    /**
-     * 子类返回顶点数组
-     */
     protected abstract float[] getVertexArray();
 
-    /**
-     * 子类在渲染前的绑定顶点
-     */
     protected abstract void onBindVAO();
 
-    /**
-     * 渲染
-     * @param textureId 纹理ID
-     * @param textureMatrix 纹理矩阵
-     */
+    protected void onAfterDraw(int textureId, float[] cameraMatrix, float[] textureMatrix) {}
+
     protected abstract void onDrawFrame(int textureId, float[] cameraMatrix, float[] textureMatrix);
 }

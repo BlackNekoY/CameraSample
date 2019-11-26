@@ -4,7 +4,7 @@ import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
 import android.support.annotation.NonNull;
 
-public class OESFilter extends BlankFilter {
+public class OESFilter extends NoEffectFilter {
 
     private static final String FRAGMENT_SHADER =
             "#version 300 es\n" +

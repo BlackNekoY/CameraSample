@@ -12,7 +12,6 @@ import android.view.Surface;
 
 import com.slim.me.camerasample.egl.EglCore;
 import com.slim.me.camerasample.record.render.Texture2DRender;
-import com.slim.me.camerasample.record.render.filter.BlankFilter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

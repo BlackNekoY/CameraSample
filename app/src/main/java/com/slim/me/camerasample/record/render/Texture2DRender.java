@@ -3,9 +3,8 @@ package com.slim.me.camerasample.record.render;
 
 import android.opengl.GLES30;
 
-import com.slim.me.camerasample.record.render.filter.BaseFilter;
-import com.slim.me.camerasample.record.render.filter.BlankFilter;
-import com.slim.me.camerasample.record.render.filter.OESFilter;
+import com.slim.me.camerasample.record.render.filter.ImageFilter;
+import com.slim.me.camerasample.record.render.filter.NoEffectFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,15 +12,15 @@ import java.util.List;
 
 public class Texture2DRender {
 
-    private List<BaseFilter> mFilters = new ArrayList<>();
-    private BaseFilter mCopyFilter;
+    private List<ImageFilter> mFilters = new ArrayList<>();
+    private ImageFilter mCopyFilter;
     private FrameBuffer[] mFrameBuffers = new FrameBuffer[3];
     private int mCurrentTextureId;
     private int mSurfaceWidth;
     private int mSurfaceHeight;
 
     public Texture2DRender() {
-        mCopyFilter = new BlankFilter();
+        mCopyFilter = new NoEffectFilter();
         mCopyFilter.init();
     }
 
@@ -34,7 +33,7 @@ public class Texture2DRender {
         }
 
         for (int i = 0;i < mFilters.size();i++) {
-            BaseFilter filter = mFilters.get(i);
+            ImageFilter filter = mFilters.get(i);
             FrameBuffer fbo = mFrameBuffers[i % 3];
             fbo.bind();
             filter.draw(mCurrentTextureId, cameraMatrix, textureMatrix);
@@ -46,12 +45,12 @@ public class Texture2DRender {
         mCopyFilter.draw(mCurrentTextureId, cameraMatrix, textureMatrix);
     }
 
-    public void setFilters(List<BaseFilter> filters) {
+    public void setFilters(List<ImageFilter> filters) {
         mFilters.clear();
         mFilters.addAll(filters);
     }
 
-    public void setFilter(BaseFilter filter) {
+    public void setFilter(ImageFilter filter) {
         mFilters.clear();
         mFilters.add(filter);
     }
@@ -65,6 +64,9 @@ public class Texture2DRender {
         deleteFrameBuffers();
         for (int i = 0; i < 3 ; i++) {
             mFrameBuffers[i] = new FrameBuffer(width, height);
+        }
+        for (ImageFilter filter : mFilters) {
+            filter.onOutputSizeChanged(width, height);
         }
     }
 

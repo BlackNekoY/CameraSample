@@ -17,7 +17,7 @@ import com.slim.me.camerasample.R;
 import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.record.encoder.EncodeConfig;
 import com.slim.me.camerasample.record.render.Texture2DRender;
-import com.slim.me.camerasample.record.render.filter.BaseFilter;
+import com.slim.me.camerasample.record.render.filter.ImageFilter;
 import com.slim.me.camerasample.record.render.filter.BlackWhiteFilter;
 import com.slim.me.camerasample.record.render.filter.OESFilter;
 import com.slim.me.camerasample.record.render.filter.WatermarkFilter;
@@ -44,7 +44,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
     private SurfaceTexture mSurfaceTexture;
 
     private Texture2DRender mTexture2DRender;
-    private List<BaseFilter> mFilters = new ArrayList<>();
+    private List<ImageFilter> mFilters = new ArrayList<>();
 
     private int mWidth, mHeight;
 
@@ -133,8 +133,8 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
     private void initFilters() {
         mFilters.add(new OESFilter());
         mFilters.add(new BlackWhiteFilter());
-//        mFilters.add(new WatermarkFilter(BitmapFactory.decodeResource(getContext().getResources(), R.drawable.aio_voicechange_img_loly)));
-        for (BaseFilter filter : mFilters) {
+        mFilters.add(new WatermarkFilter(BitmapFactory.decodeResource(getContext().getResources(), R.drawable.awesomeface)));
+        for (ImageFilter filter : mFilters) {
             filter.init();
         }
     }

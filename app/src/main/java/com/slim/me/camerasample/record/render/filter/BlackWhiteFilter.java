@@ -2,7 +2,7 @@ package com.slim.me.camerasample.record.render.filter;
 
 import android.support.annotation.NonNull;
 
-public class BlackWhiteFilter extends BlankFilter {
+public class BlackWhiteFilter extends NoEffectFilter {
 
     private static final String FRAGMENT_SHADER =
             "#version 300 es\n" +

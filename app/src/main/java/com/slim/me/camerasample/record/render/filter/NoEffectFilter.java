@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 /**
  * 没有任何效果的Filter，仅仅只是把输入的Texture渲染出来
  */
-public class BlankFilter extends BaseFilter {
+public class NoEffectFilter extends ImageFilter {
 
     private static final float[] VERTEX_ARRAY = {
             // 位置顶点    // 纹理顶点
