@@ -20,6 +20,7 @@ public class WatermarkFilter extends NoEffectFilter {
     protected void onInit() {
 
         mWaterFilter = new NoEffectFilter();
+        mWaterFilter.setFilpY(true);
         mWaterFilter.init();
 
         int[] texture = new int[1];
@@ -47,7 +48,7 @@ public class WatermarkFilter extends NoEffectFilter {
 
     @Override
     protected void onAfterDraw(int textureId, float[] cameraMatrix, float[] textureMatrix) {
-        GLES30.glViewport(200, 200, 200, 200);
+        GLES30.glViewport(getOutputWidth() - 300, 300, 200, 200);
         mWaterFilter.draw(mWatermarkTexture, cameraMatrix, textureMatrix);
         GLES30.glViewport(0, 0, getOutputWidth(), getOutputHeight());
     }

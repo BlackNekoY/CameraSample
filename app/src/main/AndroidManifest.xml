@@ -19,7 +19,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".camera.preview.CameraPreviewActivity"/>
     </application>
 
     <uses-feature

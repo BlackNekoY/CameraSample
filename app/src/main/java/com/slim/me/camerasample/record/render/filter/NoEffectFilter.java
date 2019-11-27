@@ -9,6 +9,9 @@ import android.support.annotation.NonNull;
  */
 public class NoEffectFilter extends ImageFilter {
 
+    // 是否颠倒纹理采样
+    private boolean mFilpY;
+
     private static final float[] VERTEX_ARRAY = {
             // 位置顶点    // 纹理顶点
             -1, 1,   0, 1,
@@ -23,9 +26,11 @@ public class NoEffectFilter extends ImageFilter {
                     "layout(location = 1) in vec2 texPos;\n" +
                     "out vec2 outTexPos;\n" +
                     "uniform mat4 textureMatrix;\n" +
+                    "uniform float filpY;\n" +
                     "void main() {\n" +
                     "   gl_Position = vec4(pos, 0, 1);\n" +
                     "   vec4 texTranformPos = textureMatrix * vec4(texPos, 0, 1); \n" +
+                    "   texTranformPos.y = filpY * (1.0f - texTranformPos.y) + (1.0f - filpY) * (texTranformPos.y); \n" +
                     "   outTexPos = vec2(texTranformPos.x, texTranformPos.y);\n" +
                     "}\n";
 
@@ -55,6 +60,7 @@ public class NoEffectFilter extends ImageFilter {
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
         GLES30.glUniform1i(GLES30.glGetUniformLocation(getProgram(), "sTexture"), 0);
+        GLES30.glUniform1f(GLES30.glGetUniformLocation(getProgram(), "filpY"), mFilpY? 1.0f : 0);
         // 矩阵
         GLES30.glUniformMatrix4fv(GLES30.glGetUniformLocation(getProgram(), "textureMatrix"), 1, false, textureMatrix, 0);
     }
@@ -74,5 +80,9 @@ public class NoEffectFilter extends ImageFilter {
     @Override
     protected float[] getVertexArray() {
         return VERTEX_ARRAY;
+    }
+
+    public void setFilpY(boolean filpY) {
+        mFilpY = filpY;
     }
 }
