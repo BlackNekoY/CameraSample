@@ -51,6 +51,7 @@ public class CameraRecordActivity extends AppCompatActivity implements RecorderB
     protected void onStop() {
         super.onStop();
         CameraHelper.getInstance().stopPreview();
+        CameraHelper.getInstance().releaseCamera();
     }
 
     @Override

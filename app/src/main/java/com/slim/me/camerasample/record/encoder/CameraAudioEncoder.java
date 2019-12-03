@@ -164,6 +164,10 @@ public class CameraAudioEncoder {
             mAudioCodec = null;
             Log.d(TAG, "release video codec.");
         }
+        if (mAudioRecord != null) {
+            mAudioRecord.release();
+            mAudioRecord = null;
+        }
     }
 
     private class AudioEncodeThread extends Thread {

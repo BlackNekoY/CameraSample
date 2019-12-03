@@ -9,18 +9,18 @@ import android.opengl.EGL14;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
-import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
 
 import com.slim.me.camerasample.R;
+import com.slim.me.camerasample.app.Constants;
 import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.record.encoder.EncodeConfig;
 import com.slim.me.camerasample.record.render.Texture2DRender;
 import com.slim.me.camerasample.record.render.filter.ImageFilter;
-import com.slim.me.camerasample.record.render.filter.BlackWhiteFilter;
 import com.slim.me.camerasample.record.render.filter.OESFilter;
 import com.slim.me.camerasample.record.render.filter.WatermarkFilter;
+import com.slim.me.camerasample.util.FileUtils;
 import com.slim.me.camerasample.util.OpenGLUtils;
 
 import java.io.File;
@@ -50,7 +50,6 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
 
     private CameraRecorder mRecorder;
     private boolean mRecording; // 是否正在录制
-    private EncodeConfig mEncodeConfig;
     private final int STATE_RECORD_ON = 1;
     private final int STATE_RECORD_OFF = 2;
     private int mRecordState = STATE_RECORD_OFF;
@@ -71,11 +70,16 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
         mRecorder = new CameraRecorder();
-        mEncodeConfig = new EncodeConfig(new File(Environment.getExternalStorageDirectory(), "slim.mp4").toString(),
-                0, 0,
-                2 * 1024 * 1024,
-                1,
-                30, 0);
+    }
+
+    private File createVideoFile() {
+        if (FileUtils.isFileExist(Constants.APP_DIR_PATH)) {
+            FileUtils.delete(Constants.APP_DIR_PATH);
+        }
+        FileUtils.ensureDirExists(new File(Constants.APP_DIR_PATH));
+        File videoFile = new File(Constants.APP_DIR_PATH, "slim_" + System.currentTimeMillis() + ".mp4");
+        FileUtils.createNewFile(videoFile);
+        return videoFile;
     }
 
     @Override
@@ -102,16 +106,6 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         mWidth = width;
         mHeight = height;
-        mEncodeConfig.width = width;
-        mEncodeConfig.height = height;
-        // 需要保证视频的长宽是偶数
-        if (mEncodeConfig.width % 2 != 0) {
-            mEncodeConfig.width--;
-        }
-        if (mEncodeConfig.height % 2 != 0) {
-            mEncodeConfig.height--;
-        }
-
         GLES30.glViewport(0, 0, width, height);
 
         preview();
@@ -141,6 +135,9 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
     }
 
     private void preview() {
+        if (!CameraHelper.getInstance().isOpened()) {
+            openCamera();
+        }
         CameraHelper.getInstance().stopPreview();
         CameraHelper.getInstance().setDisplayOrientation(90);
         setPreviewSize();
@@ -175,8 +172,9 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
             switch (mRecordState) {
                 case STATE_RECORD_OFF:
                     // 开始录制，设置录制线程的ShareEGLContext为渲染线程的EGLContext，因为textureID为渲染线程的
-                    mEncodeConfig.updateEglContext(EGL14.eglGetCurrentContext());
-                    mRecorder.startRecord(mEncodeConfig);
+                    EncodeConfig encodeConfig = createEncodeConfig();
+                    encodeConfig.updateEglContext(EGL14.eglGetCurrentContext());
+                    mRecorder.startRecord(encodeConfig);
                     mRecordState = STATE_RECORD_ON;
                     break;
                 case STATE_RECORD_ON:
@@ -204,6 +202,24 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         if (previewSize != null) {
             CameraHelper.getInstance().setPreviewSize(previewSize);
         }
+    }
+
+    private EncodeConfig createEncodeConfig() {
+        File videoFile = createVideoFile();
+        // 需要保证视频的长宽是偶数
+        int width = mWidth;
+        int height = mHeight;
+        if (width % 2 != 0) {
+            width--;
+        }
+        if (height % 2 != 0) {
+            height--;
+        }
+        return new EncodeConfig(videoFile.getAbsolutePath(),
+                width, height,
+                2 * 1024 * 1024,
+                1,
+                30, 0);
     }
 
     @Override

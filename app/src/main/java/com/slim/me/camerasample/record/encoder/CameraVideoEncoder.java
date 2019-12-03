@@ -16,6 +16,9 @@ import com.slim.me.camerasample.record.render.Texture2DRender;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import javax.microedition.khronos.egl.EGL;
+import javax.microedition.khronos.egl.EGL10;
+
 
 /**
  * 摄像机视频录制器
@@ -97,6 +100,9 @@ public class CameraVideoEncoder {
     }
 
     private void startEncodeThread() {
+        if (mHandlerThread != null) {
+            mHandlerThread.quit();
+        }
         mHandlerThread = new HandlerThread("video_encode");
         mHandlerThread.start();
         mHandler = new Handler(mHandlerThread.getLooper(), new EncodeCallback());
@@ -195,6 +201,7 @@ public class CameraVideoEncoder {
     }
 
     private void release() {
+        // 释放VideoCodec
         if (mVideoCodec != null) {
             try {
                 mVideoCodec.stop();
@@ -208,6 +215,17 @@ public class CameraVideoEncoder {
             }
             mVideoCodec = null;
             Log.d(TAG, "release video codec.");
+        }
+        // 停止线程
+        if (mHandlerThread != null) {
+            mHandlerThread.quit();
+            mHandlerThread = null;
+        }
+        // 释放EGL
+        if (mEglCore != null) {
+            mEglCore.release();
+            mEGLSurface = null;
+            mEglCore = null;
         }
     }
 

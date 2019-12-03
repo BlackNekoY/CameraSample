@@ -528,6 +528,10 @@ public class CameraHelper {
         }
     }
 
+    public boolean isOpened() {
+        return mIsOpened;
+    }
+
     public static class CustomSize {
         // 摄像头是横屏的，所以width > height;
         public int width;
