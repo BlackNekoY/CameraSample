@@ -6,16 +6,8 @@
     android:layout_height="match_parent"
     tools:context=".record.CameraRecordActivity">
 
-    <com.slim.me.camerasample.record.CameraRecordView
-        android:id="@+id/record_view"
+    <com.slim.me.camerasample.record.PreviewLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
-
-    <com.slim.me.camerasample.record.widget.RecorderButton
-        android:id="@+id/record_btn"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>

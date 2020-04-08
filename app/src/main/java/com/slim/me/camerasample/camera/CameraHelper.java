@@ -1,5 +1,6 @@
 package com.slim.me.camerasample.camera;
 
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Build;
@@ -82,26 +83,6 @@ public class CameraHelper {
         }
     }
 
-    private int getCameraId(int id) {
-        int cameraId = -1;
-        switch (id) {
-            case CAMERA_FRONT:
-                if(CameraAbility.hasFrontCamera()) {
-                    cameraId = CameraAbility.getFrontCameraId();
-                }
-                break;
-            case CAMERA_BACK:
-                if(CameraAbility.hasBackCamera()) {
-                    cameraId = CameraAbility.getBackCameraId();
-                }
-                break;
-            default:
-                cameraId = CameraAbility.getBackCameraId();
-                break;
-        }
-        return cameraId;
-    }
-
     public boolean setSurfaceHolder(SurfaceHolder holder) {
         if(null == mCamera || holder == null) {
             return false;
@@ -120,27 +101,27 @@ public class CameraHelper {
         return false;
     }
 
-    public boolean setSurfaceTexture(SurfaceTexture texture) {
-        if(null == mCamera || texture == null) {
-            return false;
+    public void setSurfaceTexture(SurfaceTexture texture) {
+        if(null == mCamera) {
+            Log.e(TAG, "Camera is null, setSurfaceTexture failed.");
+            return;
         }
         // 正在预览，不允许更换SurfaceTexture
         if(mIsPreviewing) {
-            Log.i(TAG, "is previewing, refuse setSurfaceTexture.");
-            return false;
+            Log.e(TAG, "previewing, setSurfaceTexture failed.");
+            return;
         }
         try {
             mCamera.setPreviewTexture(texture);
-            return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
     }
 
-    public boolean setPreViewCallback(Camera.PreviewCallback callback, boolean useBuffer) {
+    public void setPreViewCallback(Camera.PreviewCallback callback, boolean useBuffer) {
         if(mCamera == null) {
-            return false;
+            Log.e(TAG, "Camera is null, setPreViewCallback failed.");
+            return;
         }
         try {
             if(useBuffer) {
@@ -151,25 +132,8 @@ public class CameraHelper {
             }else {
                 mCamera.setPreviewCallback(callback);
             }
-            return true;
         }catch (Exception e) {
             e.printStackTrace();
-        }
-
-        return false;
-    }
-
-    private void makeSureBuffer() {
-        Camera.Size previewSize = mCamera.getParameters().getPreviewSize();
-
-        // 1*Y + 1/4 * U + 1/4 * V = 3/2
-        int bufferSize = previewSize.width * previewSize.height * 3 / 2;
-
-        if(USER_BUFFER_1 == null || USER_BUFFER_1.length != bufferSize) {
-            USER_BUFFER_1 = new byte[bufferSize];
-        }
-        if(USER_BUFFER_2 == null || USER_BUFFER_2.length != bufferSize) {
-            USER_BUFFER_2 = new byte[bufferSize];
         }
     }
 
@@ -186,71 +150,58 @@ public class CameraHelper {
         return false;
     }
 
-
-    public boolean startPreview() {
-        if(null == mCamera) {
-            Log.e(TAG, "Camera is null. refuse startPreview.");
-            return false;
+    public void startPreview() {
+        if(mCamera == null) {
+            Log.e(TAG, "Camera is null. startPreview failed.");
+            return;
         }
         if(mIsPreviewing) {
-            Log.e(TAG, "is previewing. refuse startPreview.");
-            return false;
+            Log.e(TAG, "previewing. startPreview failed.");
+            return;
         }
         try {
             mCamera.startPreview();
             mIsPreviewing = true;
-            return true;
         }catch (Exception e) {
             e.printStackTrace();
             mIsPreviewing = false;
         }
-        return false;
     }
 
-    /**
-     * stopPreview，will clear PreviewDisplay & PreviewCallback
-     */
-    public boolean stopPreview() {
+    public void stopPreview() {
         if(mCamera == null) {
-            Log.e(TAG, "Camera is null. refuse stopPreview");
-            return false;
+            Log.e(TAG, "Camera is null. stopPreview failed.");
+            return;
         }
         if(!mIsPreviewing) {
-            Log.e(TAG, "is not previewing. refuse stopPreview");
-            return false;
+            Log.e(TAG, "is not previewing. stopPreview failed");
+            return;
         }
         try {
             mCamera.stopPreview();
-            /**
-             * You have to unset preview callback before camera.release(), after camera.stopPreview()
-             * otherwise it might throw RuntimeException : use camera after called camera.release()
-             */
             mCamera.setPreviewCallback(null);
             mCamera.setPreviewDisplay(null);
             mCamera.setPreviewTexture(null);
             mIsPreviewing = false;
-            return true;
         }catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
     }
 
-    public boolean setCameraParameters(Camera.Parameters params) {
+    public void setCameraParameters(Camera.Parameters params) {
         if(mCamera == null) {
             Log.e(TAG, "Camera is null, setCameraParameters failed.");
-            return false;
+            return;
         }
-        if (null == params) {
-            return false;
+        if (params == null) {
+            Log.e(TAG, "params is null, setCameraParameters failed.");
+            return;
         }
         try {
             mCamera.setParameters(params);
-            return true;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
     }
 
     @Nullable
@@ -259,57 +210,110 @@ public class CameraHelper {
             Log.e(TAG, "Camera is null, getCameraParameters failed.");
             return null;
         }
-        Camera.Parameters params = null;
         try {
-            params = mCamera.getParameters();
+            return mCamera.getParameters();
         } catch (Exception e) {
             e.printStackTrace();
-            params = null;
+            return null;
         }
-        return params;
     }
 
-    public boolean setDisplayOrientation(int degrees) {
+    public void setDisplayOrientation(int degrees) {
         if(mCamera == null) {
             Log.e(TAG, "Camera is null, setDisplayOrientation failed.");
-            return false;
+            return;
         }
-
         try {
             mCamera.setDisplayOrientation(degrees);
             mDisplayOrientation = degrees;
-            return true;
         }catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
     }
 
-    public boolean setPreviewFormat(int format) {
+    public void setPreviewFormat(int format) {
         if(mCamera == null) {
-            Log.e(TAG, "Camera is null, setImageFormat failed.");
-            return false;
+            Log.e(TAG, "Camera is null, setPreviewFormat failed.");
+            return;
         }
 
         if(!CameraAbility.getInstance().isSupportPreviewFormat(format)) {
             Log.e(TAG, "format:" + format + " is not supportPreviewFormat.");
-            return false;
+            return;
         }
-
         try {
             Camera.Parameters parameters = getCameraParameters();
             if(parameters != null) {
                 parameters.setPreviewFormat(format);
-                boolean result = setCameraParameters(parameters);
-                if(result) {
-                    mPreviewFormat = format;
-                    return true;
-                }
+                setCameraParameters(parameters);
+                mPreviewFormat = format;
             }
         }catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+    }
+
+    public void setFocusMode(String mode) {
+        if(mCamera == null) {
+            Log.e(TAG, "Camera is null, setFocusMode failed.");
+            return;
+        }
+        try {
+            Camera.Parameters params = getCameraParameters();
+            if (params != null) {
+                List<String> supportModes = params.getSupportedFocusModes();
+                if (supportModes.contains(mode)) {
+                    params.setFocusMode(mode);
+                    mCamera.setParameters(params);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void focus(float x, float y, int size, int surfaceWidth, int surfaceHeight) {
+        if (mCamera == null) {
+            Log.e(TAG, "Camera is null, focus failed.");
+        }
+        final Camera.Parameters params = getCameraParameters();
+        if (params == null) {
+            return;
+        }
+        int centerX = (int) (x / surfaceWidth * 2000 - 1000);
+        int centerY = (int) (y / surfaceHeight * 2000 - 1000);
+        int left = clamp(centerX - (size / 2), -1000, 1000);
+        int top = clamp(centerY - (size / 2), -1000, 1000);
+        int right = clamp(left + size, -1000, 1000);
+        int bottom = clamp(top + size, -1000, 1000);
+        Rect rect = new Rect(left, top, right, bottom);
+
+        mCamera.cancelAutoFocus();
+        if (params.getMaxNumFocusAreas() > 0) {
+            List<Camera.Area> focusAreas = new ArrayList<>();
+            focusAreas.add(new Camera.Area(rect, 800));
+            params.setFocusAreas(focusAreas);
+        }
+        final String currentFocusMode = params.getFocusMode();
+        params.setFocusMode(Camera.Parameters.FOCUS_MODE_MACRO);
+        mCamera.setParameters(params);
+        mCamera.autoFocus(new Camera.AutoFocusCallback() {
+            @Override
+            public void onAutoFocus(boolean success, Camera camera) {
+                params.setFocusMode(currentFocusMode);
+                mCamera.setParameters(params);
+            }
+        });
+    }
+
+    private int clamp(int x, int min, int max) {
+        if (x > max) {
+            return max;
+        }
+        if (x < min) {
+            return min;
+        }
+        return x;
     }
 
     public CustomSize getMatchedPreviewSize(int width, int height) {
@@ -364,6 +368,118 @@ public class CameraHelper {
         return null;
     }
 
+    /**
+     * 设置预览Size
+     */
+    public void setPreviewSize(CustomSize size) {
+        if(mCamera == null) {
+            Log.e(TAG, "Camera is null, setPreviewSize failed.");
+            return;
+        }
+        Camera.Parameters params = getCameraParameters();
+        if(params == null) {
+            Log.e(TAG, "Parameters is null, setPreviewSize failed.");
+            return;
+        }
+
+        try {
+            params.setPreviewSize(size.width, size.height);
+            mCamera.setParameters(params);
+            mPreviewSize = size;
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 设置拍照Size
+     */
+    public void setPictureSize(CustomSize size) {
+        if(mCamera == null) {
+            Log.e(TAG, "Camera is null, setPictureSize failed.");
+            return;
+        }
+        Camera.Parameters params = getCameraParameters();
+        if(params == null) {
+            Log.e(TAG, "Parameters is null, setPictureSize failed.");
+            return;
+        }
+
+        try {
+            params.setPictureSize(size.width, size.height);
+            mCamera.setParameters(params);
+            mPictureSize = size;
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Nullable
+    public Camera getCamera() {
+        return mCamera;
+    }
+
+    public void releaseCamera() {
+        Log.d(TAG, "releaseCamera");
+
+        if(!mIsOpened) {
+            return;
+        }
+        CameraAbility.getInstance().reset();
+        if (mCamera == null) {
+            return;
+        }
+
+        try {
+            mCamera.release();
+            mCamera = null;
+            mIsOpened = false;
+            mPreviewSize = null;
+            mPictureSize = null;
+            mDisplayOrientation = 0;
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isOpened() {
+        return mIsOpened;
+    }
+
+    private int getCameraId(int id) {
+        int cameraId = -1;
+        switch (id) {
+            case CAMERA_FRONT:
+                if(CameraAbility.hasFrontCamera()) {
+                    cameraId = CameraAbility.getFrontCameraId();
+                }
+                break;
+            case CAMERA_BACK:
+                if(CameraAbility.hasBackCamera()) {
+                    cameraId = CameraAbility.getBackCameraId();
+                }
+                break;
+            default:
+                cameraId = CameraAbility.getBackCameraId();
+                break;
+        }
+        return cameraId;
+    }
+
+    private void makeSureBuffer() {
+        Camera.Size previewSize = mCamera.getParameters().getPreviewSize();
+
+        // 1*Y + 1/4 * U + 1/4 * V = 3/2
+        int bufferSize = previewSize.width * previewSize.height * 3 / 2;
+
+        if(USER_BUFFER_1 == null || USER_BUFFER_1.length != bufferSize) {
+            USER_BUFFER_1 = new byte[bufferSize];
+        }
+        if(USER_BUFFER_2 == null || USER_BUFFER_2.length != bufferSize) {
+            USER_BUFFER_2 = new byte[bufferSize];
+        }
+    }
 
     /**
      * 从sizeList里，找出和width/height最接近的size
@@ -442,95 +558,6 @@ public class CameraHelper {
         return matchedSizes;
     }
 
-    /**
-     * 设置预览Size
-     */
-    public boolean setPreviewSize(CustomSize size) {
-        if(mCamera == null) {
-            Log.e(TAG, "Camera is null, setPreviewSize failed.");
-            return false;
-        }
-        Camera.Parameters params = getCameraParameters();
-        if(params == null) {
-            Log.e(TAG, "Parameters is null, setPreviewSize failed.");
-            return false;
-        }
-
-        try {
-            params.setPreviewSize(size.width, size.height);
-            boolean result = setCameraParameters(params);
-            if(result) {
-                mPreviewSize = size;
-                return true;
-            }
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-    /**
-     * 设置拍照Size
-     */
-    public boolean setPictureSize(CustomSize size) {
-        if(mCamera == null) {
-            Log.e(TAG, "Camera is null, setPictureSize failed.");
-            return false;
-        }
-        Camera.Parameters params = getCameraParameters();
-        if(params == null) {
-            Log.e(TAG, "Parameters is null, setPictureSize failed.");
-            return false;
-        }
-
-        try {
-            params.setPictureSize(size.width, size.height);
-            mPictureSize = size;
-            boolean result = setCameraParameters(params);
-            if(result) {
-                mPictureSize = size;
-                return true;
-            }
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-
-    @Nullable
-    public Camera getCamera() {
-        return mCamera;
-    }
-
-    public void releaseCamera() {
-        Log.d(TAG, "releaseCamera");
-
-        if(!mIsOpened) {
-            return;
-        }
-        CameraAbility.getInstance().reset();
-        if (mCamera == null) {
-            return;
-        }
-
-        try {
-            mCamera.release();
-            mCamera = null;
-            mIsOpened = false;
-            mPreviewSize = null;
-            mPictureSize = null;
-            mDisplayOrientation = 0;
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public boolean isOpened() {
-        return mIsOpened;
-    }
 
     public static class CustomSize {
         // 摄像头是横屏的，所以width > height;

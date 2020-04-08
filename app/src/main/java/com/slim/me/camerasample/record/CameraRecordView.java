@@ -17,6 +17,7 @@ import com.slim.me.camerasample.app.Constants;
 import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.record.encoder.EncodeConfig;
 import com.slim.me.camerasample.record.render.Texture2DRender;
+import com.slim.me.camerasample.record.render.filter.BlackWhiteFilter;
 import com.slim.me.camerasample.record.render.filter.ImageFilter;
 import com.slim.me.camerasample.record.render.filter.OESFilter;
 import com.slim.me.camerasample.record.render.filter.WatermarkFilter;
@@ -24,7 +25,6 @@ import com.slim.me.camerasample.util.FileUtils;
 import com.slim.me.camerasample.util.OpenGLUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,15 +39,15 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
 
     public static final String TAG = "CameraRecordView";
 
-    private int mCameraTextureId = 0;
-    private float[] mCameraMatrix = new float[16];
-
-    private SurfaceTexture mSurfaceTexture;
-
-    private Texture2DRender mTexture2DRender;
-
     private int mWidth, mHeight;
 
+    // draw frame
+    private int mCameraTextureId = 0;
+    private float[] mCameraMatrix = new float[16];
+    private SurfaceTexture mSurfaceTexture;
+    private Texture2DRender mTexture2DRender;
+
+    // record
     private CameraRecorder mRecorder;
     private boolean mRecording; // 是否正在录制
     private final int STATE_RECORD_ON = 1;
@@ -126,7 +126,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
     private List<ImageFilter> initFilters() {
         List<ImageFilter> filters = new ArrayList<>();
         filters.add(new OESFilter());
-//        filters.add(new BlackWhiteFilter());
+        filters.add(new BlackWhiteFilter());
         filters.add(new WatermarkFilter(BitmapFactory.decodeResource(getContext().getResources(), R.drawable.awesomeface)));
         for (ImageFilter filter : filters) {
             filter.init();
@@ -139,7 +139,6 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
             openCamera();
         }
         CameraHelper.getInstance().stopPreview();
-        CameraHelper.getInstance().setDisplayOrientation(90);
         setPreviewSize();
         CameraHelper.getInstance().setSurfaceTexture(mSurfaceTexture);
         CameraHelper.getInstance().startPreview();
@@ -150,20 +149,9 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
             Log.d(TAG, "openCamera failed.");
             return false;
         }
-        Camera.Parameters params = CameraHelper.getInstance().getCameraParameters();
-        if (params == null) {
-            Log.d(TAG, "Parameters is null");
-            return false;
-        }
-        params.setPreviewFormat(ImageFormat.YV12);
-        if (!CameraHelper.getInstance().setCameraParameters(params)) {
-            Log.d(TAG, "setCameraParameters failed.");
-            return false;
-        }
-        if (!CameraHelper.getInstance().setDisplayOrientation(90)) {
-            Log.d(TAG, "setDisplayOrientation failed.");
-            return false;
-        }
+        CameraHelper.getInstance().setPreviewFormat(ImageFormat.YV12);
+        CameraHelper.getInstance().setDisplayOrientation(90);
+        CameraHelper.getInstance().setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         return true;
     }
 
