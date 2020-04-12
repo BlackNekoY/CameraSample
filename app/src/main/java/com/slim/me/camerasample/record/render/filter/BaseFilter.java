@@ -6,11 +6,10 @@ import android.support.annotation.NonNull;
 import com.slim.me.camerasample.R;
 import com.slim.me.camerasample.util.OpenGLUtils;
 
-
 /**
  * 没有任何效果的Filter，仅仅只是把输入的Texture渲染出来
  */
-public class NoEffectFilter extends ImageFilter {
+public class BaseFilter extends GPUImageFilter {
 
     // 是否颠倒纹理采样
     private boolean mFilpY;
@@ -46,13 +45,13 @@ public class NoEffectFilter extends ImageFilter {
     @NonNull
     @Override
     public String getVertexShader() {
-        return OpenGLUtils.readShaderFromRawResource(R.raw.noeffect_vertex);
+        return OpenGLUtils.readShaderFromRawResource(R.raw.base_vertex);
     }
 
     @NonNull
     @Override
     public String getFragmentShader() {
-        return OpenGLUtils.readShaderFromRawResource(R.raw.noeffect_fragment);
+        return OpenGLUtils.readShaderFromRawResource(R.raw.base_fragment);
     }
 
     @Override

@@ -5,12 +5,12 @@ import android.opengl.GLES30;
 import android.opengl.GLUtils;
 
 
-public class WatermarkFilter extends NoEffectFilter {
+public class WatermarkFilter extends BaseFilter {
 
     private Bitmap mWatermark;
     private int mWatermarkTexture;
 
-    private NoEffectFilter mWaterFilter;
+    private BaseFilter mWaterFilter;
 
     public WatermarkFilter(Bitmap watermark) {
         mWatermark = watermark;
@@ -19,7 +19,7 @@ public class WatermarkFilter extends NoEffectFilter {
     @Override
     protected void onInit() {
 
-        mWaterFilter = new NoEffectFilter();
+        mWaterFilter = new BaseFilter();
         mWaterFilter.setFilpY(true);
         mWaterFilter.init();
 

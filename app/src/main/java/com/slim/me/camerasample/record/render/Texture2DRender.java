@@ -3,8 +3,8 @@ package com.slim.me.camerasample.record.render;
 
 import android.opengl.GLES30;
 
-import com.slim.me.camerasample.record.render.filter.ImageFilter;
-import com.slim.me.camerasample.record.render.filter.NoEffectFilter;
+import com.slim.me.camerasample.record.render.filter.GPUImageFilter;
+import com.slim.me.camerasample.record.render.filter.BaseFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,15 +12,15 @@ import java.util.List;
 
 public class Texture2DRender {
 
-    private List<ImageFilter> mFilters = new ArrayList<>();
-    private ImageFilter mCopyFilter;
+    private List<GPUImageFilter> mFilters = new ArrayList<>();
+    private GPUImageFilter mCopyFilter;
     private FrameBuffer[] mFrameBuffers = new FrameBuffer[3];
     private int mCurrentTextureId;
     private int mSurfaceWidth;
     private int mSurfaceHeight;
 
     public Texture2DRender() {
-        mCopyFilter = new NoEffectFilter();
+        mCopyFilter = new BaseFilter();
         mCopyFilter.init();
     }
 
@@ -33,7 +33,7 @@ public class Texture2DRender {
         }
 
         for (int i = 0;i < mFilters.size();i++) {
-            ImageFilter filter = mFilters.get(i);
+            GPUImageFilter filter = mFilters.get(i);
             FrameBuffer fbo = mFrameBuffers[i % 3];
             fbo.bind();
             filter.draw(mCurrentTextureId, cameraMatrix, textureMatrix);
@@ -45,12 +45,12 @@ public class Texture2DRender {
         mCopyFilter.draw(mCurrentTextureId, cameraMatrix, textureMatrix);
     }
 
-    public void setFilters(List<ImageFilter> filters) {
+    public void setFilters(List<GPUImageFilter> filters) {
         mFilters.clear();
         mFilters.addAll(filters);
     }
 
-    public void setFilter(ImageFilter filter) {
+    public void setFilter(GPUImageFilter filter) {
         mFilters.clear();
         mFilters.add(filter);
     }
@@ -65,7 +65,7 @@ public class Texture2DRender {
         for (int i = 0; i < 3 ; i++) {
             mFrameBuffers[i] = new FrameBuffer(width, height);
         }
-        for (ImageFilter filter : mFilters) {
+        for (GPUImageFilter filter : mFilters) {
             filter.onOutputSizeChanged(width, height);
         }
     }

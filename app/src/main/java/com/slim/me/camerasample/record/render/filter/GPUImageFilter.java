@@ -9,9 +9,9 @@ import com.slim.me.camerasample.util.OpenGLUtils;
 import java.nio.FloatBuffer;
 
 /**
- * 滤镜基类
+ * 滤镜基类，只搭建渲染框架
  */
-public abstract class ImageFilter {
+public abstract class GPUImageFilter {
 
     private static final float[] INITIALIZE_MATRIX = new float[16];
 
@@ -21,10 +21,6 @@ public abstract class ImageFilter {
     private int mOutputWidth;
     private int mOutputHeight;
 
-    static {
-        Matrix.setIdentityM(INITIALIZE_MATRIX, 0);
-    }
-
     /**
      * 在这里初始化
      * 1. 初始化program
@@ -33,6 +29,7 @@ public abstract class ImageFilter {
     public void init() {
         onInit();
 
+        Matrix.setIdentityM(INITIALIZE_MATRIX, 0);
         FloatBuffer vertexBuffer = OpenGLUtils.createFloatBuffer(getVertexArray());
         mProgram = OpenGLUtils.createProgram(getVertexShader(), getFragmentShader());
         int[] arr = new int[1];

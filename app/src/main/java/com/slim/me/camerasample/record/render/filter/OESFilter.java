@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 import com.slim.me.camerasample.R;
 import com.slim.me.camerasample.util.OpenGLUtils;
 
-public class OESFilter extends NoEffectFilter {
+public class OESFilter extends BaseFilter {
 
     @Override
     protected void onDrawFrame(int textureId, float[] cameraMatrix, float[] textureMatrix) {
