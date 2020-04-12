@@ -4,19 +4,10 @@ import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
 import android.support.annotation.NonNull;
 
+import com.slim.me.camerasample.R;
+import com.slim.me.camerasample.util.OpenGLUtils;
+
 public class OESFilter extends NoEffectFilter {
-
-    private static final String FRAGMENT_SHADER =
-            "#version 300 es\n" +
-                    "#extension GL_OES_EGL_image_external_essl3 : require\n" +
-                    "precision mediump float;\n" +
-
-                    "in vec2 outTexPos;\n" +
-                    "uniform samplerExternalOES sTexture; \n" +
-                    "out vec4 color;\n" +
-                    "void main() { \n" +
-                    "   color = texture(sTexture, outTexPos);\n" +
-                    "} \n";
 
     @Override
     protected void onDrawFrame(int textureId, float[] cameraMatrix, float[] textureMatrix) {
@@ -30,6 +21,6 @@ public class OESFilter extends NoEffectFilter {
     @NonNull
     @Override
     public String getFragmentShader() {
-        return FRAGMENT_SHADER;
+        return OpenGLUtils.readShaderFromRawResource(R.raw.oes);
     }
 }

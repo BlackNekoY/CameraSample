@@ -1,8 +1,14 @@
 package com.slim.me.camerasample.util;
 
+import android.content.Context;
 import android.opengl.GLES30;
 import android.util.Log;
 
+import com.slim.me.camerasample.app.BaseApplication;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -16,6 +22,22 @@ public class OpenGLUtils {
     public static final String TAG = "OpenGLUtils";
 
     public static final int SIZEOF_FLOAT = 4;
+
+    public static String readShaderFromRawResource(final int resourceId){
+        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(BaseApplication.Companion.getIns().getResources().openRawResource(resourceId)));
+        String nextLine;
+        final StringBuilder body = new StringBuilder();
+        try{
+            while ((nextLine = bufferedReader.readLine()) != null){
+                body.append(nextLine);
+                body.append('\n');
+            }
+        }
+        catch (IOException e){
+            return "";
+        }
+        return body.toString();
+    }
 
     public static int loadShader(int shaderType, String source) {
         int shader = GLES30.glCreateShader(shaderType);

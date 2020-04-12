@@ -3,6 +3,9 @@ package com.slim.me.camerasample.record.render.filter;
 import android.opengl.GLES30;
 import android.support.annotation.NonNull;
 
+import com.slim.me.camerasample.R;
+import com.slim.me.camerasample.util.OpenGLUtils;
+
 
 /**
  * 没有任何效果的Filter，仅仅只是把输入的Texture渲染出来
@@ -19,31 +22,6 @@ public class NoEffectFilter extends ImageFilter {
             -1, -1,  0, 0,
             1, -1,   1, 0
     };
-
-    protected static final String VERTEX_SHADER =
-            "#version 300 es\n" +
-                    "layout(location = 0) in vec2 pos;\n" +
-                    "layout(location = 1) in vec2 texPos;\n" +
-                    "out vec2 outTexPos;\n" +
-                    "uniform mat4 textureMatrix;\n" +
-                    "uniform float filpY;\n" +
-                    "void main() {\n" +
-                    "   gl_Position = vec4(pos, 0, 1);\n" +
-                    "   vec4 texTranformPos = textureMatrix * vec4(texPos, 0, 1); \n" +
-                    "   texTranformPos.y = filpY * (1.0f - texTranformPos.y) + (1.0f - filpY) * (texTranformPos.y); \n" +
-                    "   outTexPos = vec2(texTranformPos.x, texTranformPos.y);\n" +
-                    "}\n";
-
-    protected static final String FRAGMENT_SHADER =
-            "#version 300 es\n" +
-                    "precision mediump float;\n" +
-
-                    "in vec2 outTexPos;\n" +
-                    "uniform sampler2D sTexture; \n" +
-                    "out vec4 color;\n" +
-                    "void main() { \n" +
-                    "   color = texture(sTexture, outTexPos);\n" +
-                    "} \n";
 
     @Override
     protected void onBindVAO() {
@@ -68,13 +46,13 @@ public class NoEffectFilter extends ImageFilter {
     @NonNull
     @Override
     public String getVertexShader() {
-        return VERTEX_SHADER;
+        return OpenGLUtils.readShaderFromRawResource(R.raw.noeffect_vertex);
     }
 
     @NonNull
     @Override
     public String getFragmentShader() {
-        return FRAGMENT_SHADER;
+        return OpenGLUtils.readShaderFromRawResource(R.raw.noeffect_fragment);
     }
 
     @Override
