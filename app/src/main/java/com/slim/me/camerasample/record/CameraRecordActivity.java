@@ -18,11 +18,14 @@ import static com.slim.me.camerasample.util.UIUtil.getStatusBarHeight;
 
 public class CameraRecordActivity extends AppCompatActivity {
 
+    private PreviewLayout mPreviewLayout;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         initStatusBar();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_record);
+        mPreviewLayout = findViewById(R.id.preview);
     }
 
     private void initStatusBar() {
@@ -50,5 +53,6 @@ public class CameraRecordActivity extends AppCompatActivity {
         super.onDestroy();
         CameraHelper.getInstance().stopPreview();
         CameraHelper.getInstance().releaseCamera();
+        mPreviewLayout.onDestroy();
     }
 }

@@ -5,22 +5,20 @@ import android.opengl.GLES30;
 import android.opengl.GLUtils;
 
 
-public class WatermarkFilter extends BaseFilter {
+public class WatermarkFilter extends GPUImageFilter {
 
     private Bitmap mWatermark;
     private int mWatermarkTexture;
 
-    private BaseFilter mWaterFilter;
+    private GPUImageFilter mWaterFilter;
 
     public WatermarkFilter(Bitmap watermark) {
         mWatermark = watermark;
     }
 
     @Override
-    protected void onInit() {
-
-        mWaterFilter = new BaseFilter();
-        mWaterFilter.setFilpY(true);
+    protected void onInitialized() {
+        mWaterFilter = new GPUImageFilter();
         mWaterFilter.init();
 
         int[] texture = new int[1];
@@ -39,17 +37,18 @@ public class WatermarkFilter extends BaseFilter {
     }
 
     @Override
-    protected void onDrawFrame(int textureId, float[] cameraMatrix, float[] textureMatrix) {
+    protected void onPreDraw(int textureId, float[] cameraMatrix, float[] textureMatrix) {
+        super.onPreDraw(textureId, cameraMatrix, textureMatrix);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
         GLES30.glEnable(GLES30.GL_BLEND);
         GLES30.glBlendFunc(GLES30.GL_ONE, GLES30.GL_ONE_MINUS_SRC_ALPHA);
-        super.onDrawFrame(textureId, cameraMatrix, textureMatrix);
     }
 
     @Override
     protected void onAfterDraw(int textureId, float[] cameraMatrix, float[] textureMatrix) {
-        GLES30.glViewport(getOutputWidth() - 300, 300, 200, 200);
-        mWaterFilter.draw(mWatermarkTexture, cameraMatrix, textureMatrix);
-        GLES30.glViewport(0, 0, getOutputWidth(), getOutputHeight());
+        GLES30.glViewport(outputWidth - 300, 300, 200, 200);
+        mWaterFilter.draw(mWatermarkTexture, null, null);
+        GLES30.glViewport(0, 0, outputWidth, outputHeight);
     }
+
 }

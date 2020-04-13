@@ -12,6 +12,7 @@ import android.view.Surface;
 
 import com.slim.me.camerasample.egl.EglCore;
 import com.slim.me.camerasample.record.render.Texture2DRender;
+import com.slim.me.camerasample.record.render.filter.GPUImageFilter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -93,6 +94,9 @@ public class CameraVideoEncoder {
 
         // 设置渲染器
         mTextureRender = new Texture2DRender();
+        mTextureRender.setFilter(new GPUImageFilter());
+        mTextureRender.init();
+        mTextureRender.onSizeChanged(encodeConfig.width, encodeConfig.height);
 
         // start
         mVideoCodec.start();

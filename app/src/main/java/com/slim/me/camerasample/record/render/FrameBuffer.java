@@ -10,15 +10,15 @@ public class FrameBuffer {
     /**
      * 离屏FBO的纹理ID
      */
-    private int mTextureId = -1;
+    private int mTextureId;
     /**
      * FBO
      */
-    private int mFbo = -1;
+    private int mFbo;
     /**
      * rbo
      */
-    private int mRbo = -1;
+    private int mRbo;
 
     private int mWidth;
     private int mHeight;

@@ -19,6 +19,7 @@ import com.slim.me.camerasample.record.encoder.EncodeConfig;
 import com.slim.me.camerasample.record.render.Texture2DRender;
 import com.slim.me.camerasample.record.render.filter.BlackWhiteFilter;
 import com.slim.me.camerasample.record.render.filter.GPUImageFilter;
+import com.slim.me.camerasample.record.render.filter.ImageFilterGroup;
 import com.slim.me.camerasample.record.render.filter.OESFilter;
 import com.slim.me.camerasample.record.render.filter.WatermarkFilter;
 import com.slim.me.camerasample.util.FileUtils;
@@ -90,7 +91,8 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
 
         // 初始化滤镜 渲染器
         mTexture2DRender = new Texture2DRender();
-        mTexture2DRender.setFilters(initFilters());
+        mTexture2DRender.setFilter(getFilter());
+        mTexture2DRender.init();
 
         // 初始化相机纹理
         mCameraTextureId = OpenGLUtils.createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
@@ -123,15 +125,15 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         onVideoDrawFrame(mTexture2DRender.getTextureId());
     }
 
-    private List<GPUImageFilter> initFilters() {
-        List<GPUImageFilter> filters = new ArrayList<>();
+    public void onDestroy() {
+    }
+
+    private GPUImageFilter getFilter() {
+        ArrayList<GPUImageFilter> filters = new ArrayList<>();
         filters.add(new OESFilter());
         filters.add(new BlackWhiteFilter());
         filters.add(new WatermarkFilter(BitmapFactory.decodeResource(getContext().getResources(), R.drawable.awesomeface)));
-        for (GPUImageFilter filter : filters) {
-            filter.init();
-        }
-        return filters;
+        return new ImageFilterGroup(filters);
     }
 
     private void preview() {

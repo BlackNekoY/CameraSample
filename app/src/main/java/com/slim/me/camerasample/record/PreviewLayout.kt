@@ -40,6 +40,10 @@ class PreviewLayout : RelativeLayout, RecorderButton.OnRecorderButtonListener {
         mRecorderButton?.setCanPause(false)
     }
 
+    fun onDestroy() {
+        mRecordView?.onDestroy()
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val x = event.x
         val y = event.y
