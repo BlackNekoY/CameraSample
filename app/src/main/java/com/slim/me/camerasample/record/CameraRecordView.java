@@ -17,6 +17,7 @@ import com.slim.me.camerasample.app.Constants;
 import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.record.encoder.EncodeConfig;
 import com.slim.me.camerasample.record.render.Texture2DRender;
+import com.slim.me.camerasample.record.render.filter.BeautyFilter;
 import com.slim.me.camerasample.record.render.filter.BlackWhiteFilter;
 import com.slim.me.camerasample.record.render.filter.GPUImageFilter;
 import com.slim.me.camerasample.record.render.filter.ImageFilterGroup;
@@ -131,7 +132,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
     private GPUImageFilter getFilter() {
         ArrayList<GPUImageFilter> filters = new ArrayList<>();
         filters.add(new OESFilter());
-        filters.add(new BlackWhiteFilter());
+        filters.add(new BeautyFilter());
         filters.add(new WatermarkFilter(BitmapFactory.decodeResource(getContext().getResources(), R.drawable.awesomeface)));
         return new ImageFilterGroup(filters);
     }
