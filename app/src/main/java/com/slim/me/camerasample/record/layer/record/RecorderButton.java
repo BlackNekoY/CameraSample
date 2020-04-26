@@ -1,4 +1,4 @@
-package com.slim.me.camerasample.record.widget;
+package com.slim.me.camerasample.record.layer.record;
 
 import android.animation.ValueAnimator;
 import android.content.Context;

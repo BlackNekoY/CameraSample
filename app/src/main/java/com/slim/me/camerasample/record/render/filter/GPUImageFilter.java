@@ -25,6 +25,7 @@ public class GPUImageFilter {
     private int mVBO = -1;
     protected int outputWidth;
     protected int outputHeight;
+    private boolean mIsInitialized = false;
 
     private void onInit() {
         Matrix.setIdentityM(INITIALIZE_MATRIX, 0);
@@ -44,21 +45,22 @@ public class GPUImageFilter {
 
         int posHandle = GLES30.glGetAttribLocation(getProgram(), "pos");
         int texPosHandle = GLES30.glGetAttribLocation(getProgram(), "texPos");
-        if (posHandle >= 0) {
-            GLES30.glVertexAttribPointer(posHandle, 2, GLES30.GL_FLOAT, false, 4 * 4, 0);
-            GLES30.glEnableVertexAttribArray(posHandle);
-        }
-        if (texPosHandle >= 0) {
-            GLES30.glVertexAttribPointer(texPosHandle, 2, GLES30.GL_FLOAT, false, 4 * 4, 2 * 4);
-            GLES30.glEnableVertexAttribArray(texPosHandle);
-        }
+        GLES30.glVertexAttribPointer(posHandle, 2, GLES30.GL_FLOAT, false, 4 * 4, 0);
+        GLES30.glEnableVertexAttribArray(posHandle);
+        GLES30.glVertexAttribPointer(texPosHandle, 2, GLES30.GL_FLOAT, false, 4 * 4, 2 * 4);
+        GLES30.glEnableVertexAttribArray(texPosHandle);
 
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0);
         GLES30.glBindVertexArray(0);
     }
 
+    public final boolean isInit() {
+        return mIsInitialized;
+    }
+
     public final void init() {
         onInit();
+        mIsInitialized = true;
         onInitialized();
     }
 

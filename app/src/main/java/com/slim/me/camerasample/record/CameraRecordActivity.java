@@ -37,7 +37,7 @@ public class CameraRecordActivity extends AppCompatActivity {
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, statusBarHeight);
         params.gravity = Gravity.TOP;
         statusBarView.setLayoutParams(params);
-        statusBarView.setBackgroundColor(Color.BLACK);
+        statusBarView.setBackgroundColor(Color.TRANSPARENT);
         decorViewGroup.addView(statusBarView);
     }
 

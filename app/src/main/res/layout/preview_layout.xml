@@ -4,11 +4,47 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.slim.me.camerasample.record.CameraRecordView
+    <com.slim.me.camerasample.record.layer.record.CameraRecordView
         android:id="@+id/record_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
+    <!-- 右上角功能区 -->
+    <LinearLayout
+        android:id="@+id/func_area"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginRight="16dp">
+
+        <LinearLayout
+            android:id="@+id/filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/publisher_filter_btn"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:shadowRadius="2"
+                android:text="滤镜"
+                android:textColor="#ffffff"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- 对焦窗口 -->
     <ImageView
         android:id="@+id/focus_area"
         android:layout_width="80dp"
@@ -16,7 +52,17 @@
         android:background="@drawable/focus_bg"
         android:visibility="gone"/>
 
-    <com.slim.me.camerasample.record.widget.RecorderButton
+    <!-- 滤镜选择区 -->
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/filter_list"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_alignParentBottom="true"
+        android:background="#77000000"
+        android:visibility="gone"/>
+
+    <!-- 拍摄按钮 -->
+    <com.slim.me.camerasample.record.layer.record.RecorderButton
         android:id="@+id/record_btn"
         android:layout_width="100dp"
         android:layout_height="100dp"

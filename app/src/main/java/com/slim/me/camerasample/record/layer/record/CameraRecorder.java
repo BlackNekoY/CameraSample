@@ -1,4 +1,4 @@
-package com.slim.me.camerasample.record;
+package com.slim.me.camerasample.record.layer.record;
 
 import android.media.MediaMuxer;
 

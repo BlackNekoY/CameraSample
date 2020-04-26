@@ -1,4 +1,4 @@
-package com.slim.me.camerasample.record;
+package com.slim.me.camerasample.record.layer.record;
 
 import android.content.Context;
 import android.graphics.BitmapFactory;
@@ -9,6 +9,7 @@ import android.opengl.EGL14;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.Log;
 
@@ -28,7 +29,6 @@ import com.slim.me.camerasample.util.OpenGLUtils;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -92,7 +92,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
 
         // 初始化滤镜 渲染器
         mTexture2DRender = new Texture2DRender();
-        mTexture2DRender.setFilter(getFilter());
+        mTexture2DRender.setFilter(new OESFilter());
         mTexture2DRender.init();
 
         // 初始化相机纹理
@@ -133,6 +133,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         ArrayList<GPUImageFilter> filters = new ArrayList<>();
         filters.add(new OESFilter());
         filters.add(new BeautyFilter());
+        filters.add(new BlackWhiteFilter());
         filters.add(new WatermarkFilter(BitmapFactory.decodeResource(getContext().getResources(), R.drawable.awesomeface)));
         return new ImageFilterGroup(filters);
     }
@@ -226,4 +227,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         mRecording = false;
     }
 
+    public void changeFilter(@NonNull GPUImageFilter filter) {
+        mTexture2DRender.setFilter(filter);
+    }
 }
