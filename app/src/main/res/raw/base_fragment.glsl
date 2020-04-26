@@ -1,9 +1,9 @@
 #version 300 es
 precision mediump float;
 
-in vec2 outTexPos;
-uniform sampler2D sTexture;
+in vec2 textureCoordinate;
+uniform sampler2D inputImageTexture;
 out vec4 color;
 void main() {
-   color = texture(sTexture, outTexPos);
+   color = texture(inputImageTexture, textureCoordinate);
 }

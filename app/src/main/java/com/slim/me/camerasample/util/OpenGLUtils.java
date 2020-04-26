@@ -1,7 +1,8 @@
 package com.slim.me.camerasample.util;
 
-import android.content.Context;
+import android.graphics.Bitmap;
 import android.opengl.GLES30;
+import android.opengl.GLUtils;
 import android.util.Log;
 
 import com.slim.me.camerasample.app.BaseApplication;
@@ -100,19 +101,32 @@ public class OpenGLUtils {
         int[] textureHandle = new int[1];
 
         GLES30.glGenTextures(1, textureHandle, 0);
-        OpenGLUtils.checkGlError("glGenTextures");
         GLES30.glBindTexture(textureTarget, textureHandle[0]);
-        OpenGLUtils.checkGlError("glBindTexture " + textureHandle[0]);
         GLES30.glTexParameterf(textureTarget, GLES30.GL_TEXTURE_MIN_FILTER, minFilter);
         GLES30.glTexParameterf(textureTarget, GLES30.GL_TEXTURE_MAG_FILTER, magFilter); //线性插值
         GLES30.glTexParameteri(textureTarget, GLES30.GL_TEXTURE_WRAP_S, wrapS);
         GLES30.glTexParameteri(textureTarget, GLES30.GL_TEXTURE_WRAP_T, wrapT);
-        OpenGLUtils.checkGlError("glTexParameter");
+        GLES30.glBindTexture(textureTarget, 0);
         return textureHandle[0];
     }
 
     public static int createTexture(int textureTarget) {
         return createTexture(textureTarget, GLES30.GL_LINEAR, GLES30.GL_LINEAR, GLES30.GL_CLAMP_TO_EDGE, GLES30.GL_CLAMP_TO_EDGE);
+    }
+
+    public static int createTexture2D(Bitmap bitmap) {
+        return createTexture2D(bitmap, GLES30.GL_LINEAR, GLES30.GL_LINEAR, GLES30.GL_CLAMP_TO_EDGE, GLES30.GL_CLAMP_TO_EDGE);
+    }
+
+    public static int createTexture2D(Bitmap bitmap, int minFilter, int magFilter, int wrapS, int wrapT) {
+        final int texId = createTexture(GLES30.GL_TEXTURE_2D, minFilter, magFilter, wrapS, wrapT);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texId);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
+        if (!bitmap.isRecycled()) {
+            bitmap.recycle();
+        }
+        return texId;
     }
 
     /**

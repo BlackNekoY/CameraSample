@@ -13,7 +13,7 @@ public class OESFilter extends GPUImageFilter {
     protected void onPreDraw(int textureId, float[] cameraMatrix, float[] textureMatrix) {
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
-        GLES30.glUniform1i(GLES30.glGetUniformLocation(getProgram(), "sTexture"), 0);
+        GLES30.glUniform1i(GLES30.glGetUniformLocation(getProgram(), "inputImageTexture"), 0);
         GLES30.glUniform1f(GLES30.glGetUniformLocation(getProgram(), "filpY"), 0f);
         GLES30.glUniformMatrix4fv(GLES30.glGetUniformLocation(getProgram(), "textureMatrix"), 1, false, cameraMatrix, 0);
     }

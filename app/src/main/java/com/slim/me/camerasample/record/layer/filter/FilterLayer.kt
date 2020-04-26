@@ -27,6 +27,7 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
             add(OESFilter())
             add(createFilterGroup(OESFilter(), BlackWhiteFilter()))
             add(createFilterGroup(OESFilter(), BeautyFilter()))
+            add(createFilterGroup(OESFilter(), SunsetFilter()))
             add(createFilterGroup(OESFilter(), WatermarkFilter(BitmapFactory.decodeResource(mRoot.resources, R.drawable.awesomeface))))
         }
         val filterNameList = ArrayList<String>()
@@ -34,6 +35,7 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
             add("无")
             add("黑白")
             add("美颜")
+            add("日落")
             add("水印")
         }
         mAdapter.setFilters(filterList)

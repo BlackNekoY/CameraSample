@@ -2,7 +2,8 @@ package com.slim.me.camerasample.record.render.filter;
 
 import android.graphics.Bitmap;
 import android.opengl.GLES30;
-import android.opengl.GLUtils;
+
+import com.slim.me.camerasample.util.OpenGLUtils;
 
 
 public class WatermarkFilter extends GPUImageFilter {
@@ -20,20 +21,7 @@ public class WatermarkFilter extends GPUImageFilter {
     protected void onInitialized() {
         mWaterFilter = new GPUImageFilter();
         mWaterFilter.init();
-
-        int[] texture = new int[1];
-        GLES30.glGenTextures(1, texture, 0);
-        mWatermarkTexture = texture[0];
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mWatermarkTexture);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_MIRRORED_REPEAT);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_MIRRORED_REPEAT);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);
-        GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, mWatermark, 0);
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
-
-        mWatermark.recycle();
-        mWatermark = null;
+        mWatermarkTexture = OpenGLUtils.createTexture2D(mWatermark, GLES30.GL_NEAREST, GLES30.GL_LINEAR, GLES30.GL_MIRRORED_REPEAT, GLES30.GL_MIRRORED_REPEAT);
     }
 
     @Override
