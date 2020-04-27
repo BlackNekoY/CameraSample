@@ -1,11 +1,15 @@
 package com.slim.me.camerasample.record.layer
 
+import com.slim.me.camerasample.record.layer.event.CommonLayerEvent
+import com.slim.me.camerasample.record.layer.event.ILayerEvent
+import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_DESTROY
+
 class LayerManager {
     private val mLayerList: ArrayList<BaseLayer> = ArrayList()
 
-    fun postLayerEvent(eventType: Int, params: Any?) {
+    fun postLayerEvent(event: ILayerEvent) {
         for (layer in mLayerList) {
-            layer.handleLayerEvent(eventType, params)
+            layer.handleLayerEvent(event)
         }
     }
 
@@ -14,6 +18,6 @@ class LayerManager {
     }
 
     fun onDestroy() {
-        postLayerEvent(BaseLayer.EVENT_DESTROY, null)
+        postLayerEvent(CommonLayerEvent(EVENT_DESTROY))
     }
 }

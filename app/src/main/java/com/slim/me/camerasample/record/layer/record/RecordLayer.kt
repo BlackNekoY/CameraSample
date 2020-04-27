@@ -1,5 +1,6 @@
 package com.slim.me.camerasample.record.layer.record
 
+import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -9,7 +10,14 @@ import com.slim.me.camerasample.R
 import com.slim.me.camerasample.camera.CameraHelper
 import com.slim.me.camerasample.record.layer.BaseLayer
 import com.slim.me.camerasample.record.layer.LayerManager
+import com.slim.me.camerasample.record.layer.event.ILayerEvent
+import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_CHANGE_FILTER
+import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_DESTROY
+import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_LIST_HIDE
+import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_LIST_SHOW
+import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FOCUS_PRESS
 import com.slim.me.camerasample.record.render.filter.GPUImageFilter
+import com.slim.me.camerasample.util.UIUtil
 
 class RecordLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerManager),
         RecorderButton.OnRecorderButtonListener {
@@ -26,10 +34,10 @@ class RecordLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
         mRecorderButton.setCanPause(false)
     }
 
-    override fun handleLayerEvent(eventType: Int, params: Any?) {
-        when (eventType) {
+    override fun handleLayerEvent(event: ILayerEvent) {
+        when (event.getType()) {
             EVENT_CHANGE_FILTER -> {
-                val filter = params as? GPUImageFilter ?: return
+                val filter = event.getParam(GPUImageFilter::class.java) ?: return
                 mRecordView.changeFilter(filter)
             }
             EVENT_FILTER_LIST_SHOW -> {
@@ -37,6 +45,13 @@ class RecordLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
             }
             EVENT_FILTER_LIST_HIDE -> {
                 mRecorderButton.visibility = VISIBLE
+            }
+            EVENT_FOCUS_PRESS -> {
+                val bundle = event.getParam(Bundle::class.java) ?: return
+                val x = bundle.getFloat("x")
+                val y = bundle.getFloat("y")
+                val size = UIUtil.dip2px(mRecordView.context, 80f)
+                focus(x, y, size, mRecordView.width, mRecordView.height)
             }
             EVENT_DESTROY -> {
                 mRecordView.onDestroy()
@@ -65,7 +80,7 @@ class RecordLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
         mRecordView.stopRecord()
     }
 
-    fun focus(x: Float, y: Float, size: Int, width: Int, height: Int) {
+    private fun focus(x: Float, y: Float, size: Int, width: Int, height: Int) {
         CameraHelper.getInstance().focus(x, y, size, width, height)
         mFocusArea.run {
             val params = layoutParams as RelativeLayout.LayoutParams

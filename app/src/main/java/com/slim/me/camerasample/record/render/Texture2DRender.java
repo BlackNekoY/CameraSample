@@ -6,6 +6,9 @@ import com.slim.me.camerasample.record.render.filter.ImageFilterGroup;
 public class Texture2DRender {
 
     private GPUImageFilter mRenderFilter;
+    private GPUImageFilter mLeftFilter;
+    private float mLeftOffset = 1f;
+
     private GPUImageFilter mCopyFilter;
     private FrameBuffer mRenderFBO;
     private int mWidth, mHeight;
@@ -38,6 +41,10 @@ public class Texture2DRender {
 
     public void setFilter(GPUImageFilter filter) {
         mRenderFilter = filter;
+    }
+
+    public void setLeftFilter(GPUImageFilter filter) {
+
     }
 
     public void onSizeChanged(final int width, final int height) {
