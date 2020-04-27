@@ -1,6 +1,6 @@
 package com.slim.me.camerasample.record.layer.event
 
-class CommonLayerEvent : ILayerEvent {
+open class CommonLayerEvent : ILayerEvent {
 
     private val mType : Int
     private val mParams : Any?

@@ -7,6 +7,7 @@ import android.widget.RelativeLayout
 import com.slim.me.camerasample.R
 import com.slim.me.camerasample.record.layer.LayerManager
 import com.slim.me.camerasample.record.layer.filter.FilterLayer
+import com.slim.me.camerasample.record.layer.gesture.GestureLayer
 import com.slim.me.camerasample.record.layer.record.RecordLayer
 
 class PreviewLayout : RelativeLayout {
@@ -14,6 +15,7 @@ class PreviewLayout : RelativeLayout {
     private lateinit var mLayerManager: LayerManager
     private lateinit var mFilterLayer: FilterLayer
     private lateinit var mRecordLayer: RecordLayer
+    private lateinit var mGestureLayer: GestureLayer
 
     constructor(context: Context?) : this(context, null)
     constructor(context: Context?, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -26,8 +28,10 @@ class PreviewLayout : RelativeLayout {
         mLayerManager = LayerManager()
         mFilterLayer = FilterLayer(mLayerManager, view)
         mRecordLayer = RecordLayer(mLayerManager, view)
+        mGestureLayer = GestureLayer(mLayerManager, view)
         mLayerManager.addLayer(mFilterLayer)
         mLayerManager.addLayer(mRecordLayer)
+        mLayerManager.addLayer(mGestureLayer)
     }
 
     fun onDestroy() {

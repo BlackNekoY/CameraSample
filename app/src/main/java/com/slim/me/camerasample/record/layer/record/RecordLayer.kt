@@ -10,11 +10,13 @@ import com.slim.me.camerasample.R
 import com.slim.me.camerasample.camera.CameraHelper
 import com.slim.me.camerasample.record.layer.BaseLayer
 import com.slim.me.camerasample.record.layer.LayerManager
+import com.slim.me.camerasample.record.layer.event.ChangeFilterEvent
 import com.slim.me.camerasample.record.layer.event.ILayerEvent
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_CHANGE_FILTER
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_DESTROY
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_LIST_HIDE
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_LIST_SHOW
+import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_ON_SCROLL
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FOCUS_PRESS
 import com.slim.me.camerasample.record.render.filter.GPUImageFilter
 import com.slim.me.camerasample.util.UIUtil
@@ -37,8 +39,12 @@ class RecordLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
     override fun handleLayerEvent(event: ILayerEvent) {
         when (event.getType()) {
             EVENT_CHANGE_FILTER -> {
-                val filter = event.getParam(GPUImageFilter::class.java) ?: return
-                mRecordView.changeFilter(filter)
+                val changeEvent = event as? ChangeFilterEvent ?: return
+                mRecordView.changeFilter(changeEvent.leftFilter, changeEvent.rightFilter)
+            }
+            EVENT_FILTER_ON_SCROLL -> {
+                val x = event.getParam(Float::class.java) ?: return
+                mRecordView.changeScrollX(x)
             }
             EVENT_FILTER_LIST_SHOW -> {
                 mRecorderButton.visibility = GONE

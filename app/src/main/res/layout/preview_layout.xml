@@ -4,10 +4,34 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- 录制View -->
     <com.slim.me.camerasample.record.layer.record.CameraRecordView
         android:id="@+id/record_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
+    <!-- 滤镜viewpager -->
+    <android.support.v4.view.ViewPager
+        android:id="@+id/filter_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <!-- 滤镜选择区 -->
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/filter_list"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_alignParentBottom="true"
+        android:background="#77000000"
+        android:visibility="gone"/>
+
+    <!-- 对焦窗口 -->
+    <ImageView
+        android:id="@+id/focus_area"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:background="@drawable/focus_bg"
+        android:visibility="gone"/>
 
     <!-- 右上角功能区 -->
     <LinearLayout
@@ -43,23 +67,6 @@
         </LinearLayout>
 
     </LinearLayout>
-
-    <!-- 对焦窗口 -->
-    <ImageView
-        android:id="@+id/focus_area"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:background="@drawable/focus_bg"
-        android:visibility="gone"/>
-
-    <!-- 滤镜选择区 -->
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/filter_list"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_alignParentBottom="true"
-        android:background="#77000000"
-        android:visibility="gone"/>
 
     <!-- 拍摄按钮 -->
     <com.slim.me.camerasample.record.layer.record.RecorderButton

@@ -17,6 +17,7 @@ import com.slim.me.camerasample.R;
 import com.slim.me.camerasample.app.Constants;
 import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.record.encoder.EncodeConfig;
+import com.slim.me.camerasample.record.render.FrameBufferFactory;
 import com.slim.me.camerasample.record.render.Texture2DRender;
 import com.slim.me.camerasample.record.render.filter.BeautyFilter;
 import com.slim.me.camerasample.record.render.filter.BlackWhiteFilter;
@@ -86,7 +87,6 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        // 初始化OpenGL
         GLES30.glClearColor(0, 0, 0, 1);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
@@ -107,10 +107,9 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
+        FrameBufferFactory.INSTANCE.initFrameBuffers(width, height);
         mWidth = width;
         mHeight = height;
-        GLES30.glViewport(0, 0, width, height);
-
         preview();
         mTexture2DRender.onSizeChanged(width, height);
     }
@@ -127,6 +126,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
     }
 
     public void onDestroy() {
+        FrameBufferFactory.INSTANCE.deleteFrameBuffers();
     }
 
     private GPUImageFilter getFilter() {
@@ -228,6 +228,21 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
     }
 
     public void changeFilter(@NonNull GPUImageFilter filter) {
-        mTexture2DRender.setFilter(filter);
+        if (mTexture2DRender != null) {
+            mTexture2DRender.setFilter(filter);
+        }
+    }
+
+    public void changeFilter(@NonNull GPUImageFilter leftFilter, GPUImageFilter rightFilter) {
+        if (mTexture2DRender != null) {
+            mTexture2DRender.setLeftFilter(leftFilter);
+            mTexture2DRender.setRightFilter(rightFilter);
+        }
+    }
+
+    public void changeScrollX(float x) {
+        if (mTexture2DRender != null) {
+            mTexture2DRender.setScrollX(x);
+        }
     }
 }
