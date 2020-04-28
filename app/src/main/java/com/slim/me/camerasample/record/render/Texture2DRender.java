@@ -6,6 +6,7 @@ import android.opengl.GLES30;
 import com.slim.me.camerasample.R;
 import com.slim.me.camerasample.app.BaseApplication;
 import com.slim.me.camerasample.record.render.filter.GPUImageFilter;
+import com.slim.me.camerasample.record.render.filter.ImageFilterGroup;
 import com.slim.me.camerasample.record.render.filter.WatermarkFilter;
 
 import java.util.LinkedList;
@@ -19,6 +20,7 @@ public class Texture2DRender {
 
     private final LinkedList<Runnable> mPendingGLThreadTask = new LinkedList<>();
     private FrameBuffer mRenderFBO;
+    private FrameBufferFactory mRenderFboFactory;
     private int mWidth, mHeight;
 
     private float mLeftOffset = 1f;
@@ -27,9 +29,7 @@ public class Texture2DRender {
         if (mCopyFilter == null) {
             mCopyFilter = new GPUImageFilter();
         }
-        if (mWatermarkFilter == null) {
-            mWatermarkFilter = new WatermarkFilter(BitmapFactory.decodeResource(BaseApplication.Companion.getIns().getResources(), R.drawable.awesomeface));
-        }
+        mRenderFboFactory = new FrameBufferFactory();
         checkFilterInit();
     }
 
@@ -49,6 +49,15 @@ public class Texture2DRender {
         if (mWatermarkFilter != null && !mWatermarkFilter.isInit()) {
             mWatermarkFilter.init();
             mWatermarkFilter.onOutputSizeChanged(mWidth, mHeight);
+        }
+    }
+
+    private void checkFilterFrameBuffer(boolean set) {
+        if (mLeftFilter != null && mLeftFilter.isInit() && mLeftFilter instanceof ImageFilterGroup) {
+            ((ImageFilterGroup) mLeftFilter).setFrameBufferFactory(set ? mRenderFboFactory : null);
+        }
+        if (mRightFilter != null && mRightFilter.isInit() && mRightFilter instanceof ImageFilterGroup) {
+            ((ImageFilterGroup) mRightFilter).setFrameBufferFactory(set ? mRenderFboFactory : null);
         }
     }
 
@@ -73,6 +82,7 @@ public class Texture2DRender {
             return;
         }
         checkFilterInit();
+        checkFilterFrameBuffer(true);
 
         mRenderFBO.bind();
         if (mRightFilter != null) {
@@ -82,6 +92,8 @@ public class Texture2DRender {
         }
         mRenderFBO.unbind();
         mCopyFilter.draw(mRenderFBO.getTextureId(), null, null);
+
+        checkFilterFrameBuffer(false);
     }
 
     private void drawTextureScissor(int textureId, float[] cameraMatrix, float[] textureMatrix) {
@@ -161,6 +173,7 @@ public class Texture2DRender {
     }
 
     public void onSizeChanged(final int width, final int height) {
+        mRenderFboFactory.initFrameBuffers(width, height);
         GLES30.glViewport(0, 0, width, height);
         mWidth = width;
         mHeight = height;
@@ -170,5 +183,9 @@ public class Texture2DRender {
 
     public int getTextureId() {
         return mRenderFBO.getTextureId();
+    }
+
+    public void release() {
+        mRenderFboFactory.deleteFrameBuffers();
     }
 }

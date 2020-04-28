@@ -15,7 +15,6 @@ import android.util.Log;
 import com.slim.me.camerasample.app.Constants;
 import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.record.encoder.EncodeConfig;
-import com.slim.me.camerasample.record.render.FrameBufferFactory;
 import com.slim.me.camerasample.record.render.Texture2DRender;
 import com.slim.me.camerasample.record.render.filter.GPUImageFilter;
 import com.slim.me.camerasample.record.render.filter.ImageFilterGroup;
@@ -108,7 +107,6 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        FrameBufferFactory.INSTANCE.initFrameBuffers(width, height);
         mWidth = width;
         mHeight = height;
         preview();
@@ -127,7 +125,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
     }
 
     public void onDestroy() {
-        FrameBufferFactory.INSTANCE.deleteFrameBuffers();
+        mTexture2DRender.release();
     }
 
     private void preview() {

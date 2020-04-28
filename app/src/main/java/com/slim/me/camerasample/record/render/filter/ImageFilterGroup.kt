@@ -6,6 +6,7 @@ import java.util.ArrayList
 class ImageFilterGroup(filters: ArrayList<GPUImageFilter>) : GPUImageFilter() {
     private val mFilters : ArrayList<GPUImageFilter> = filters
     private lateinit var mCopyFilter : GPUImageFilter
+    private var mRenderFboFactory: FrameBufferFactory? = null
 
     override fun onInitialized() {
         mCopyFilter = GPUImageFilter()
@@ -23,15 +24,17 @@ class ImageFilterGroup(filters: ArrayList<GPUImageFilter>) : GPUImageFilter() {
     }
 
     override fun onPreDraw(textureId: Int, cameraMatrix: FloatArray?, textureMatrix: FloatArray?) {
+        val factory = mRenderFboFactory ?: return
+
         val cameraM = cameraMatrix ?: INITIALIZE_MATRIX
         val textureM = textureMatrix ?: INITIALIZE_MATRIX
         var texId = textureId
-        val cacheFrameBuffers = FrameBufferFactory.getFrameBuffers()
+        val cacheFrameBuffers = arrayOf(factory.applyFrameBuffer(), factory.applyFrameBuffer())
         for (i in mFilters.indices) {
             val filter = mFilters[i]
 
             val fbo = cacheFrameBuffers[i % cacheFrameBuffers.size]
-            fbo?.run {
+            fbo.run {
                 bind()
                 filter.draw(texId, cameraM, textureM)
                 unbind()
@@ -39,5 +42,13 @@ class ImageFilterGroup(filters: ArrayList<GPUImageFilter>) : GPUImageFilter() {
             }
         }
         mCopyFilter.draw(texId, cameraM, textureM)
+
+        for (fbo in cacheFrameBuffers) {
+            factory.repayFrameBuffer(fbo)
+        }
+    }
+
+    fun setFrameBufferFactory(factory: FrameBufferFactory?) {
+        mRenderFboFactory = factory
     }
 }
