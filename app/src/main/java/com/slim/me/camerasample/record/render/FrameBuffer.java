@@ -20,6 +20,8 @@ public class FrameBuffer {
      */
     private int mRbo;
 
+    private int[] mPreviousFbo = new int[]{0};
+
     private int mWidth;
     private int mHeight;
 
@@ -57,12 +59,17 @@ public class FrameBuffer {
      * 将FBO绑定到当前Surface上
      */
     public void bind() {
+        GLES30.glGetIntegerv(GLES30.GL_FRAMEBUFFER_BINDING, mPreviousFbo, 0);
+
         GLES30.glViewport(0, 0, mWidth, mHeight);
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFbo);
     }
 
     public void unbind() {
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
+        if (mPreviousFbo[0] < 0) {
+            mPreviousFbo[0] = 0;
+        }
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mPreviousFbo[0]);
     }
 
     public int getTextureId() {

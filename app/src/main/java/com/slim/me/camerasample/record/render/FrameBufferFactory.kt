@@ -3,11 +3,12 @@ package com.slim.me.camerasample.record.render
 import android.opengl.GLES30
 
 object FrameBufferFactory {
-    private var mFrameBuffers = arrayOfNulls<FrameBuffer>(3)
+    private const val SIZE = 2
+    private var mFrameBuffers = arrayOfNulls<FrameBuffer>(SIZE)
 
     fun initFrameBuffers(width: Int, height: Int) {
         deleteFrameBuffers()
-        for (i in 0..2) {
+        for (i in mFrameBuffers.indices) {
             mFrameBuffers[i] = FrameBuffer(width, height)
         }
     }
@@ -21,7 +22,7 @@ object FrameBufferFactory {
                 GLES30.glDeleteFramebuffers(1, ids, 2)
             }
         }
-        mFrameBuffers = arrayOfNulls(3)
+        mFrameBuffers = arrayOfNulls(SIZE)
     }
 
     fun getFrameBuffers() : Array<FrameBuffer?> {

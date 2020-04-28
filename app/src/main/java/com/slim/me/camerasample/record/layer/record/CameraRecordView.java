@@ -1,7 +1,6 @@
 package com.slim.me.camerasample.record.layer.record;
 
 import android.content.Context;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -13,18 +12,14 @@ import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.Log;
 
-import com.slim.me.camerasample.R;
 import com.slim.me.camerasample.app.Constants;
 import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.record.encoder.EncodeConfig;
 import com.slim.me.camerasample.record.render.FrameBufferFactory;
 import com.slim.me.camerasample.record.render.Texture2DRender;
-import com.slim.me.camerasample.record.render.filter.BeautyFilter;
-import com.slim.me.camerasample.record.render.filter.BlackWhiteFilter;
 import com.slim.me.camerasample.record.render.filter.GPUImageFilter;
 import com.slim.me.camerasample.record.render.filter.ImageFilterGroup;
 import com.slim.me.camerasample.record.render.filter.OESFilter;
-import com.slim.me.camerasample.record.render.filter.WatermarkFilter;
 import com.slim.me.camerasample.util.FileUtils;
 import com.slim.me.camerasample.util.OpenGLUtils;
 
@@ -85,6 +80,12 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         return videoFile;
     }
 
+    private GPUImageFilter getTestFilter() {
+        ArrayList<GPUImageFilter> list = new ArrayList<>();
+        list.add(new OESFilter());
+        return new ImageFilterGroup(list);
+    }
+
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES30.glClearColor(0, 0, 0, 1);
@@ -127,15 +128,6 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
 
     public void onDestroy() {
         FrameBufferFactory.INSTANCE.deleteFrameBuffers();
-    }
-
-    private GPUImageFilter getFilter() {
-        ArrayList<GPUImageFilter> filters = new ArrayList<>();
-        filters.add(new OESFilter());
-        filters.add(new BeautyFilter());
-        filters.add(new BlackWhiteFilter());
-        filters.add(new WatermarkFilter(BitmapFactory.decodeResource(getContext().getResources(), R.drawable.awesomeface)));
-        return new ImageFilterGroup(filters);
     }
 
     private void preview() {

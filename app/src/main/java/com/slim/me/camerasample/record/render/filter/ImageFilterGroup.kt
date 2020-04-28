@@ -1,13 +1,11 @@
 package com.slim.me.camerasample.record.render.filter
 
-import com.slim.me.camerasample.record.render.FrameBuffer
 import com.slim.me.camerasample.record.render.FrameBufferFactory
 import java.util.ArrayList
 
 class ImageFilterGroup(filters: ArrayList<GPUImageFilter>) : GPUImageFilter() {
     private val mFilters : ArrayList<GPUImageFilter> = filters
     private lateinit var mCopyFilter : GPUImageFilter
-    private var mRenderFrameBuffer : FrameBuffer? = null
 
     override fun onInitialized() {
         mCopyFilter = GPUImageFilter()
@@ -28,7 +26,6 @@ class ImageFilterGroup(filters: ArrayList<GPUImageFilter>) : GPUImageFilter() {
         val cameraM = cameraMatrix ?: INITIALIZE_MATRIX
         val textureM = textureMatrix ?: INITIALIZE_MATRIX
         var texId = textureId
-        mRenderFrameBuffer?.unbind()
         val cacheFrameBuffers = FrameBufferFactory.getFrameBuffers()
         for (i in mFilters.indices) {
             val filter = mFilters[i]
@@ -41,12 +38,6 @@ class ImageFilterGroup(filters: ArrayList<GPUImageFilter>) : GPUImageFilter() {
                 texId = getTextureId()
             }
         }
-        mRenderFrameBuffer?.bind()
         mCopyFilter.draw(texId, cameraM, textureM)
     }
-
-    fun setRenderFrameBuffer(renderFrameBuffer: FrameBuffer) {
-        mRenderFrameBuffer = renderFrameBuffer
-    }
-
 }

@@ -45,7 +45,6 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
             add(createFilterGroup(OESFilter(), SunsetFilter()))
             add(createFilterGroup(OESFilter(), SweetsFilter()))
             add(createFilterGroup(OESFilter(), TenderFilter()))
-            add(createFilterGroup(OESFilter(), WatermarkFilter(BitmapFactory.decodeResource(mRoot.resources, R.drawable.awesomeface))))
         }
         mFilterListName.run {
             add("无")
@@ -54,7 +53,6 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
             add("日落")
             add("甜美")
             add("温柔")
-            add("水印")
         }
         mAdapter.setFilters(mFilterList)
         mAdapter.setFilterName(mFilterListName)
