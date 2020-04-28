@@ -1,6 +1,7 @@
 package com.slim.me.camerasample.record.layer.record;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -12,18 +13,18 @@ import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.Log;
 
+import com.slim.me.camerasample.R;
 import com.slim.me.camerasample.app.Constants;
 import com.slim.me.camerasample.camera.CameraHelper;
 import com.slim.me.camerasample.record.encoder.EncodeConfig;
 import com.slim.me.camerasample.record.render.Texture2DRender;
 import com.slim.me.camerasample.record.render.filter.GPUImageFilter;
-import com.slim.me.camerasample.record.render.filter.ImageFilterGroup;
 import com.slim.me.camerasample.record.render.filter.OESFilter;
+import com.slim.me.camerasample.record.render.filter.WatermarkFilter;
 import com.slim.me.camerasample.util.FileUtils;
 import com.slim.me.camerasample.util.OpenGLUtils;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -79,12 +80,6 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         return videoFile;
     }
 
-    private GPUImageFilter getTestFilter() {
-        ArrayList<GPUImageFilter> list = new ArrayList<>();
-        list.add(new OESFilter());
-        return new ImageFilterGroup(list);
-    }
-
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES30.glClearColor(0, 0, 0, 1);
@@ -93,6 +88,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         // 初始化滤镜 渲染器
         mTexture2DRender = new Texture2DRender();
         mTexture2DRender.setFilter(new OESFilter());
+        mTexture2DRender.setWatermarkFilter(new WatermarkFilter(BitmapFactory.decodeResource(getResources(), R.drawable.awesomeface)));
         mTexture2DRender.init();
 
         // 初始化相机纹理

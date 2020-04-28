@@ -115,6 +115,7 @@ public class CameraVideoEncoder {
     private void stopEncodeInner() {
         drainEncoder(true);
         mEncoding = false;
+        mTextureRender.release();
         release();
         mMuxer.releaseVideo();
     }

@@ -1,13 +1,10 @@
 package com.slim.me.camerasample.record.render;
 
-import android.graphics.BitmapFactory;
 import android.opengl.GLES30;
+import android.util.Log;
 
-import com.slim.me.camerasample.R;
-import com.slim.me.camerasample.app.BaseApplication;
 import com.slim.me.camerasample.record.render.filter.GPUImageFilter;
 import com.slim.me.camerasample.record.render.filter.ImageFilterGroup;
-import com.slim.me.camerasample.record.render.filter.WatermarkFilter;
 
 import java.util.LinkedList;
 
@@ -16,9 +13,10 @@ public class Texture2DRender {
     private GPUImageFilter mCopyFilter;
     private GPUImageFilter mLeftFilter;
     private GPUImageFilter mRightFilter;
-    private WatermarkFilter mWatermarkFilter;
+    private GPUImageFilter mWatermarkFilter;
 
     private final LinkedList<Runnable> mPendingGLThreadTask = new LinkedList<>();
+    private final LinkedList<FrameBuffer> mCacheFrameBuffers = new LinkedList<>();
     private FrameBuffer mRenderFBO;
     private FrameBufferFactory mRenderFboFactory;
     private int mWidth, mHeight;
@@ -84,16 +82,31 @@ public class Texture2DRender {
         checkFilterInit();
         checkFilterFrameBuffer(true);
 
+        int texId = drawTextureInner(textureId, cameraMatrix, textureMatrix);
+        texId = drawWaterMark(texId, cameraMatrix, textureMatrix);
+
         mRenderFBO.bind();
-        if (mRightFilter != null) {
-            drawTextureScissor(textureId, cameraMatrix, textureMatrix);
-        } else {
-            drawTextureInner(textureId, cameraMatrix, textureMatrix);
-        }
+        mCopyFilter.draw(texId, null, null);
         mRenderFBO.unbind();
         mCopyFilter.draw(mRenderFBO.getTextureId(), null, null);
 
         checkFilterFrameBuffer(false);
+        repayAllFrameBuffers();
+    }
+
+    private int drawTextureInner(int textureId, float[] cameraMatrix, float[] textureMatrix) {
+        if (mLeftFilter == null && mRightFilter == null) {
+            return textureId;
+        }
+        FrameBuffer fbo = applyFrameBuffer();
+        fbo.bind();
+        if (mRightFilter != null) {
+            drawTextureScissor(textureId, cameraMatrix, textureMatrix);
+        } else {
+            drawTextureNormal(textureId, cameraMatrix, textureMatrix);
+        }
+        fbo.unbind();
+        return fbo.getTextureId();
     }
 
     private void drawTextureScissor(int textureId, float[] cameraMatrix, float[] textureMatrix) {
@@ -110,16 +123,34 @@ public class Texture2DRender {
         GLES30.glViewport(0, 0, mWidth, mHeight);
     }
 
-    private void drawTextureInner(int textureId, float[] cameraMatrix, float[] textureMatrix) {
+    private void drawTextureNormal(int textureId, float[] cameraMatrix, float[] textureMatrix) {
         GLES30.glViewport(0, 0, mWidth, mHeight);
         GLES30.glDisable(GLES30.GL_SCISSOR_TEST);
         mLeftFilter.draw(textureId, cameraMatrix, textureMatrix);
     }
 
-    private void drawWaterMark(int textureId, float[] cameraMatrix, float[] textureMatrix) {
-        if (mWatermarkFilter != null) {
-            mWatermarkFilter.draw(textureId, cameraMatrix, textureMatrix);
+    private int drawWaterMark(int textureId, float[] cameraMatrix, float[] textureMatrix) {
+        if (mWatermarkFilter == null) {
+            return textureId;
         }
+        FrameBuffer fbo = applyFrameBuffer();
+        fbo.bind();
+        mWatermarkFilter.draw(textureId, cameraMatrix, textureMatrix);
+        fbo.unbind();
+        return fbo.getTextureId();
+    }
+
+    private FrameBuffer applyFrameBuffer() {
+        FrameBuffer fbo = mRenderFboFactory.applyFrameBuffer();
+        mCacheFrameBuffers.addLast(fbo);
+        return fbo;
+    }
+
+    private void repayAllFrameBuffers() {
+        for (FrameBuffer fbo : mCacheFrameBuffers) {
+            mRenderFboFactory.repayFrameBuffer(fbo);
+        }
+        mCacheFrameBuffers.clear();
     }
 
     private void doAllPendingTask() {
@@ -161,6 +192,17 @@ public class Texture2DRender {
         }
     }
 
+    public void setWatermarkFilter(final GPUImageFilter filter) {
+        synchronized (mPendingGLThreadTask) {
+            mPendingGLThreadTask.addLast(new Runnable() {
+                @Override
+                public void run() {
+                    mWatermarkFilter = filter;
+                }
+            });
+        }
+    }
+
     public void setScrollX(final float x) {
         synchronized (mPendingGLThreadTask) {
             mPendingGLThreadTask.addLast(new Runnable() {
@@ -192,6 +234,10 @@ public class Texture2DRender {
     }
 
     public void release() {
+        Log.d("slim", "render release");
         mRenderFboFactory.deleteFrameBuffers();
+        Log.d("slim", "FBO release");
+        mRenderFBO.release();
+        mRenderFBO = null;
     }
 }

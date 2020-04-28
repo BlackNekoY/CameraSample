@@ -1,11 +1,8 @@
 package com.slim.me.camerasample.record.layer.filter
 
-import android.graphics.BitmapFactory
-import android.os.Bundle
 import android.support.v4.view.ViewPager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.View
 import com.slim.me.camerasample.R
 import com.slim.me.camerasample.record.layer.BaseLayer
@@ -17,8 +14,6 @@ import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_F
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_LIST_SHOW
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_ON_SCROLL
 import com.slim.me.camerasample.record.render.filter.*
-import com.slim.me.camerasample.util.UIUtil
-import kotlin.math.abs
 
 class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerManager), View.OnClickListener,
         FilterListAdapter.FilterChooseCallback {
@@ -82,7 +77,6 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
                     ViewPager.SCROLL_STATE_DRAGGING -> {}
                     ViewPager.SCROLL_STATE_SETTLING -> {}
                 }
-                Log.d("slim", "onPageScrollStateChanged: $state")
             }
 
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
@@ -94,12 +88,10 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
                 }
                 postLayerEvent(ChangeFilterEvent(leftFilter, rightFilter))
                 postLayerEvent(CommonLayerEvent(EVENT_FILTER_ON_SCROLL, 1 - positionOffset))
-                Log.d("slim", "onPageScrolled: position = $position, positionOffset = $positionOffset, positionOffsetPixels = $positionOffsetPixels")
             }
 
             override fun onPageSelected(position: Int) {
                 selectPos = position
-                Log.d("slim", "onPageSelected: $position")
             }
         })
     }
