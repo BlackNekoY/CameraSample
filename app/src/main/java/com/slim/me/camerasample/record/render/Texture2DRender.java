@@ -13,10 +13,10 @@ import java.util.LinkedList;
 
 public class Texture2DRender {
 
+    private GPUImageFilter mCopyFilter;
     private GPUImageFilter mLeftFilter;
     private GPUImageFilter mRightFilter;
     private WatermarkFilter mWatermarkFilter;
-    private GPUImageFilter mCopyFilter;
 
     private final LinkedList<Runnable> mPendingGLThreadTask = new LinkedList<>();
     private FrameBuffer mRenderFBO;
@@ -173,11 +173,17 @@ public class Texture2DRender {
     }
 
     public void onSizeChanged(final int width, final int height) {
-        mRenderFboFactory.initFrameBuffers(width, height);
-        GLES30.glViewport(0, 0, width, height);
         mWidth = width;
         mHeight = height;
+
+        mRenderFboFactory.initFrameBuffers(width, height);
+        if (mRenderFBO != null) {
+            mRenderFBO.release();
+            mRenderFBO = null;
+        }
         mRenderFBO = new FrameBuffer(width, height);
+
+        GLES30.glViewport(0, 0, width, height);
         onFiltersSizeChanged(width, height);
     }
 

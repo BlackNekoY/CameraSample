@@ -1,6 +1,5 @@
 package com.slim.me.camerasample.record.render
 
-import android.opengl.GLES30
 import java.util.*
 
 class FrameBufferFactory {
@@ -16,10 +15,7 @@ class FrameBufferFactory {
 
     fun deleteFrameBuffers() {
         for (fbo in mFrameBuffers) {
-            val ids = intArrayOf(fbo.textureId, fbo.rbo, fbo.fbo)
-            GLES30.glDeleteTextures(1, ids, 0)
-            GLES30.glDeleteRenderbuffers(1, ids, 1)
-            GLES30.glDeleteFramebuffers(1, ids, 2)
+            fbo.release()
         }
         mFrameBuffers.clear()
     }
