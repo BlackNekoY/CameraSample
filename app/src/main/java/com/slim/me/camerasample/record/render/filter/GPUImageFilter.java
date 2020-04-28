@@ -60,8 +60,8 @@ public class GPUImageFilter {
 
     public final void init() {
         onInit();
-        mIsInitialized = true;
         onInitialized();
+        mIsInitialized = true;
     }
 
     public final void draw(int textureId, float[] cameraMatrix, float[] textureMatrix) {
@@ -84,11 +84,24 @@ public class GPUImageFilter {
         outputHeight = height;
     }
 
+    public final void destroy() {
+        GLES30.glDeleteVertexArrays(1, new int[]{mVAO}, 0);
+        GLES30.glDeleteBuffers(1, new int[mVBO], 0);
+        GLES30.glDeleteProgram(mProgram);
+        mIsInitialized = false;
+        mVAO = -1;
+        mVBO = -1;
+        mProgram = -1;
+        onDestroy();
+    }
+
     final int getProgram() {
         return mProgram;
     }
 
     protected void onInitialized(){}
+
+    protected void onDestroy(){}
 
     @NonNull
     protected String getVertexShader() {

@@ -48,6 +48,13 @@ class ImageFilterGroup(filters: ArrayList<GPUImageFilter>) : GPUImageFilter() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        for (filter in mFilters) {
+            filter.destroy()
+        }
+    }
+
     fun setFrameBufferFactory(factory: FrameBufferFactory?) {
         mRenderFboFactory = factory
     }

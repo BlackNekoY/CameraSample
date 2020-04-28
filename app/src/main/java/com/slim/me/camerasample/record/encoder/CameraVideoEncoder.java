@@ -115,9 +115,7 @@ public class CameraVideoEncoder {
     private void stopEncodeInner() {
         drainEncoder(true);
         mEncoding = false;
-        mTextureRender.release();
         release();
-        mMuxer.releaseVideo();
     }
 
     private void onVideoFrameInner(int textureId) {
@@ -221,16 +219,24 @@ public class CameraVideoEncoder {
             mVideoCodec = null;
             Log.d(TAG, "release video codec.");
         }
-        // 停止线程
-        if (mHandlerThread != null) {
-            mHandlerThread.quit();
-            mHandlerThread = null;
-        }
+        mSurface.release();
+        // 释放render显存
+        mTextureRender.release();
+
         // 释放EGL
         if (mEglCore != null) {
             mEglCore.release();
             mEGLSurface = null;
             mEglCore = null;
+        }
+
+        // 通知Muxer释放Video
+        mMuxer.releaseVideo();
+
+        // 停止线程
+        if (mHandlerThread != null) {
+            mHandlerThread.quit();
+            mHandlerThread = null;
         }
     }
 

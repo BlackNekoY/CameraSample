@@ -234,10 +234,21 @@ public class Texture2DRender {
     }
 
     public void release() {
-        Log.d("slim", "render release");
         mRenderFboFactory.deleteFrameBuffers();
-        Log.d("slim", "FBO release");
         mRenderFBO.release();
         mRenderFBO = null;
+        if (mCopyFilter != null) {
+            mCopyFilter.destroy();
+        }
+        if (mLeftFilter != null) {
+            mLeftFilter.destroy();
+        }
+        if (mRightFilter != null) {
+            mRightFilter.destroy();
+        }
+        if (mWatermarkFilter != null) {
+            mWatermarkFilter.destroy();
+        }
+
     }
 }
