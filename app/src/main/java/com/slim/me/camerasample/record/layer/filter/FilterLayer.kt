@@ -1,5 +1,6 @@
 package com.slim.me.camerasample.record.layer.filter
 
+import android.os.Bundle
 import android.support.v4.view.ViewPager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -16,7 +17,7 @@ import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_F
 import com.slim.me.camerasample.record.render.filter.*
 
 class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerManager), View.OnClickListener,
-        FilterListAdapter.FilterChooseCallback {
+        FilterListAdapter.FilterChooseCallback, FilterPagerAdapter.OnScreenClickCallback {
     private val mRoot: View = rootView
     private val mFilterView: View = rootView.findViewById(R.id.filter)
     private val mFilterListView: RecyclerView = rootView.findViewById(R.id.filter_list)
@@ -54,6 +55,7 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
 
         mPagerAdapter.setFilters(mFilterList)
         mPagerAdapter.setFilterName(mFilterListName)
+        mPagerAdapter.setCallback(this)
     }
 
     private fun initLayer() {
@@ -107,6 +109,13 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
     }
 
     override fun handleLayerEvent(event: ILayerEvent) {}
+
+    override fun onScreenClick(x: Float, y: Float) {
+        val bundle = Bundle()
+        bundle.putFloat("x", x)
+        bundle.putFloat("y", y)
+        postLayerEvent(CommonLayerEvent(ILayerEvent.EVENT_FOCUS_PRESS, bundle))
+    }
 
     override fun onClick(v: View) {
         when (v.id) {
