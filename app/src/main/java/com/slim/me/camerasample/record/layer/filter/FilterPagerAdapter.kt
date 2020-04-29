@@ -69,6 +69,7 @@ class FilterPagerAdapter : PagerAdapter(), View.OnTouchListener {
         val y = event.y
         val dx = x - mPressX
         val dy = y - mPressY
+        val slop = ViewConfiguration.get(v.context).scaledTouchSlop
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -77,9 +78,8 @@ class FilterPagerAdapter : PagerAdapter(), View.OnTouchListener {
                 mPressTime = SystemClock.uptimeMillis()
             }
             MotionEvent.ACTION_MOVE -> { }
-            MotionEvent.ACTION_UP -> {
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 val currTime = SystemClock.uptimeMillis()
-                val slop = ViewConfiguration.get(v.context).scaledTouchSlop
                 if (abs(dx) < slop && abs(dy) < slop && abs(currTime - mPressTime) < 100) {
                     // 触发点击对焦
                     mCallback?.onScreenClick(x, y)
