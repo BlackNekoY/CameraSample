@@ -101,7 +101,7 @@ public class CameraAudioEncoder {
             int encoderStatus = mAudioCodec.dequeueOutputBuffer(mAudioBuffInfo, TIMEOUT_USEC);
             if (encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 // 当前队列数据已处理完，跳出循环。
-                Log.d(TAG, "VideoCodec: no output available yet");
+                Log.d(TAG, "AudioCodec: no output available yet");
                 break;      // out of while
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
                 // not expected for an encoder
@@ -109,24 +109,24 @@ public class CameraAudioEncoder {
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 // 只有在第一次写入视频时会到这里
                 MediaFormat videoFormat = mAudioCodec.getOutputFormat();
-                Log.d(TAG, "VideoCodec: encoder output format changed: " + videoFormat);
+                Log.d(TAG, "AudioCodec: encoder output format changed: " + videoFormat);
                 mMuxer.addAudioTrack(videoFormat);
                 mMuxer.start();
             } else if (encoderStatus < 0) {
                 // 其他未知错误，忽略
-                Log.w(TAG, "VideoCodec: unexpected result from encoder.dequeueOutputBuffer: " + encoderStatus);
+                Log.w(TAG, "AudioCodec: unexpected result from encoder.dequeueOutputBuffer: " + encoderStatus);
             } else {
                 // 如果有收到surface更新，就将endTryTimes清0。
                 ByteBuffer encodedData = encoderOutputBuffers[encoderStatus];
                 if (encodedData == null) {
-                    throw new RuntimeException("VideoCodec: encoderOutputBuffer " + encoderStatus +
+                    throw new RuntimeException("AudioCodec: encoderOutputBuffer " + encoderStatus +
                             " was null");
                 }
 
                 if ((mAudioBuffInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
                     // The codec config data was pulled out and fed to the muxer when we got
                     // the INFO_OUTPUT_FORMAT_CHANGED status.  Ignore it.
-                    Log.d(TAG, "VideoCodec: ignoring BUFFER_FLAG_CODEC_CONFIG");
+                    Log.d(TAG, "AudioCodec: ignoring BUFFER_FLAG_CODEC_CONFIG");
                     mAudioBuffInfo.size = 0;
                 }
 
@@ -136,7 +136,7 @@ public class CameraAudioEncoder {
                     encodedData.limit(mAudioBuffInfo.offset + mAudioBuffInfo.size);
                     mMuxer.writeAudioData(encodedData, mAudioBuffInfo);
 
-                    Log.d(TAG, "VideoCodec: sent " + mAudioBuffInfo.size + " bytes to muxer, ts=" +
+                    Log.d(TAG, "AudioCodec: sent " + mAudioBuffInfo.size + " bytes to muxer, ts=" +
                             mAudioBuffInfo.presentationTimeUs * 1000);
                 }
 
@@ -154,12 +154,12 @@ public class CameraAudioEncoder {
             try {
                 mAudioCodec.stop();
             } catch (Exception e) {
-                Log.w(TAG, "mVideoCodec stop exception:" + e);
+                Log.w(TAG, "mAudioCodec stop exception:" + e);
             }
             try {
                 mAudioCodec.release();
             } catch (Exception e) {
-                Log.w(TAG, "mVideoCodec release exception:" + e);
+                Log.w(TAG, "mAudioCodec release exception:" + e);
             }
             mAudioCodec = null;
             Log.d(TAG, "release video codec.");
