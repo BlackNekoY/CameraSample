@@ -2,6 +2,7 @@ package com.slim.me.camerasample.record.render.filter;
 
 import android.graphics.Bitmap;
 import android.opengl.GLES30;
+import android.opengl.Matrix;
 
 import com.slim.me.camerasample.util.OpenGLUtils;
 
@@ -12,6 +13,7 @@ public class WatermarkFilter extends GPUImageFilter {
     private int mWatermarkTexture;
 
     private GPUImageFilter mWaterFilter;
+    private float[] mWatermarkRotateMatrix = new float[16];
 
     public WatermarkFilter(Bitmap watermark) {
         mWatermark = watermark;
@@ -35,7 +37,10 @@ public class WatermarkFilter extends GPUImageFilter {
     @Override
     protected void onAfterDraw(int textureId, float[] cameraMatrix, float[] textureMatrix) {
         GLES30.glViewport(outputWidth - 300, 300, 200, 200);
-        mWaterFilter.draw(mWatermarkTexture, null, null);
+        Matrix.setIdentityM(mWatermarkRotateMatrix, 0);
+        Matrix.translateM(mWatermarkRotateMatrix, 0, 0f, 1f, 0);
+        Matrix.rotateM(mWatermarkRotateMatrix, 0, 180, 1.0f, 0.0f, 0.0f);
+        mWaterFilter.draw(mWatermarkTexture, null, mWatermarkRotateMatrix);
         GLES30.glViewport(0, 0, outputWidth, outputHeight);
     }
 
