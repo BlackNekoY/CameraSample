@@ -193,11 +193,8 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         if (height % 2 != 0) {
             height--;
         }
-        return new EncodeConfig(videoFile.getAbsolutePath(),
-                width, height,
-                2 * 1024 * 1024,
-                1,
-                30, 0);
+        return new EncodeConfig(videoFile.getAbsolutePath(), width, height, 2 * 1024 * 1024, 1, 30, 0,
+                44100, 128 * 100);
     }
 
     @Override

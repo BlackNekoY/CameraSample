@@ -1,6 +1,7 @@
 package com.slim.me.camerasample.record.layer.record;
 
 import android.media.MediaMuxer;
+import android.util.Log;
 
 import com.slim.me.camerasample.record.encoder.CameraAudioEncoder;
 import com.slim.me.camerasample.record.encoder.CameraVideoEncoder;
@@ -10,6 +11,8 @@ import com.slim.me.camerasample.record.encoder.MuxerWrapper;
 import java.io.IOException;
 
 public class CameraRecorder {
+
+    public static final String TAG = "CameraRecorder";
 
     private CameraVideoEncoder mVideoEncoder;
     private CameraAudioEncoder mAudioEncoder;
@@ -31,6 +34,7 @@ public class CameraRecorder {
     }
 
     public void stopRecord() {
+        Log.i(TAG, "CameraRecorder: stopRecord");
         mVideoEncoder.stopEncode();
         mAudioEncoder.stopEncode();
     }

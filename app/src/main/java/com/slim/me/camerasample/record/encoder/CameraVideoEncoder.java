@@ -17,9 +17,6 @@ import com.slim.me.camerasample.record.render.filter.GPUImageFilter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import javax.microedition.khronos.egl.EGL;
-import javax.microedition.khronos.egl.EGL10;
-
 
 /**
  * 摄像机视频录制器
@@ -74,9 +71,9 @@ public class CameraVideoEncoder {
         // 配置MediaFormat
         MediaFormat format = MediaFormat.createVideoFormat(VIDEO_MIME_TYPE, encodeConfig.width, encodeConfig.height);
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-        format.setInteger(MediaFormat.KEY_BIT_RATE, encodeConfig.bitRate);
-        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, encodeConfig.iFrameRate);
-        format.setInteger(MediaFormat.KEY_FRAME_RATE, encodeConfig.frameRate);
+        format.setInteger(MediaFormat.KEY_BIT_RATE, encodeConfig.videoBitRate);
+        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, encodeConfig.videoIFrameRate);
+        format.setInteger(MediaFormat.KEY_FRAME_RATE, encodeConfig.videoFrameRate);
 
         // 创建MediaCodec
         try {
@@ -113,9 +110,11 @@ public class CameraVideoEncoder {
     }
 
     private void stopEncodeInner() {
+        Log.i(TAG, "stopEncodeInner -- start");
         drainEncoder(true);
         mEncoding = false;
         release();
+        Log.i(TAG, "stopEncodeInner -- end");
     }
 
     private void onVideoFrameInner(int textureId) {

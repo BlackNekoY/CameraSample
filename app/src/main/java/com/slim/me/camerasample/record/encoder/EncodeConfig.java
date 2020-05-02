@@ -10,44 +10,44 @@ import android.opengl.EGLContext;
 
 public class EncodeConfig {
     public EGLContext sharedContext;
-    /**
-     * 输出路径
-     */
     public String outputPath;
-
-    /**
-     * 视频长度
-     */
-    public long durationMs;
-
     public int width;
     public int height;
 
+    // Video
     /**
      * {@see MediaFormat.KEY_BIT_RATE}
      */
-    public int bitRate;
+    public final int videoBitRate;
 
     /**
      * {@see MediaFormat.KEY_I_FRAME_INTERVAL}
      */
-    public int iFrameRate;
+    public final int videoIFrameRate;
 
     /**
      * {@see MediaFormat.KEY_FRAME_RATE}
      */
-    public int frameRate;
+    public final int videoFrameRate;
 
-    public int orientation;
+    public final int orientation;
 
-    public EncodeConfig(String outputPath, int width, int height, int bitRate, int iFrameRate, int frameRate, int orientation) {
+    // Audio
+    public final int audioSampleRate;
+
+    public final int audioBitRate;
+
+    public EncodeConfig(String outputPath, int width, int height, int videoBitRate, int videoIFrameRate, int videoFrameRate, int orientation,
+                        int audioSampleRate, int audioBitRate) {
         this.outputPath = outputPath;
         this.width = width;
         this.height = height;
-        this.bitRate = bitRate;
-        this.iFrameRate = iFrameRate;
-        this.frameRate = frameRate;
+        this.videoBitRate = videoBitRate;
+        this.videoIFrameRate = videoIFrameRate;
+        this.videoFrameRate = videoFrameRate;
         this.orientation = orientation;
+        this.audioSampleRate = audioSampleRate;
+        this.audioBitRate = audioBitRate;
     }
 
     public void updateEglContext(EGLContext eglContext) {
