@@ -1,5 +1,6 @@
 package com.slim.me.camerasample.record.layer.filter
 
+import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.support.v4.view.ViewPager
 import android.support.v7.widget.LinearLayoutManager
@@ -94,8 +95,20 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
 
             override fun onPageSelected(position: Int) {
                 selectPos = position
+                val view = mFilterPager.findViewWithTag<View>(position)
+                view?.let {
+                    doAnim(it)
+                }
             }
         })
+    }
+
+    private fun doAnim(view: View) {
+        view.visibility = View.VISIBLE
+        val animator = ObjectAnimator.ofFloat(view, "alpha", 1f, 0f)
+        animator.duration = 200
+        animator.startDelay = 500
+        animator.start()
     }
 
     private fun createFilterGroup(vararg filters: GPUImageFilter) : ImageFilterGroup {

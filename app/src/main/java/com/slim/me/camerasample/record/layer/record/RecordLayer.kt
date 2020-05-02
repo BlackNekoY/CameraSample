@@ -18,7 +18,6 @@ import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_F
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_LIST_SHOW
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_ON_SCROLL
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FOCUS_PRESS
-import com.slim.me.camerasample.record.render.filter.GPUImageFilter
 import com.slim.me.camerasample.util.UIUtil
 
 class RecordLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerManager),

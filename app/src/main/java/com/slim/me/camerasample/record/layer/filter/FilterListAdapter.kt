@@ -13,6 +13,7 @@ class FilterListAdapter : RecyclerView.Adapter<FilterListAdapter.FilterViewHolde
     private val mFilterList: ArrayList<GPUImageFilter> = ArrayList()
     private val mFilterNameList: ArrayList<String> = ArrayList()
     private var mFilterChooseCallback: FilterChooseCallback? = null
+    private var mSelectedPosition: Int = 0
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilterViewHolder {
         return FilterViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.filter_item_view, parent, false))
@@ -43,14 +44,18 @@ class FilterListAdapter : RecyclerView.Adapter<FilterListAdapter.FilterViewHolde
     inner class FilterViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener  {
         private val filterName: TextView = itemView.findViewById(R.id.filter_name)
         private lateinit var filter: GPUImageFilter
+
         fun bindData(filter: GPUImageFilter, name: String) {
             this.filter = filter
             filterName.text = name
             filterName.setOnClickListener(this)
+            filterName.isSelected = mSelectedPosition == adapterPosition
         }
 
         override fun onClick(v: View?) {
             mFilterChooseCallback?.onChooseFilter(filter)
+            mSelectedPosition = adapterPosition
+            notifyDataSetChanged()
         }
     }
 

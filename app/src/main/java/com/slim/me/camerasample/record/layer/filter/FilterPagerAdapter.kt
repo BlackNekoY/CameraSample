@@ -29,6 +29,8 @@ class FilterPagerAdapter : PagerAdapter(), View.OnTouchListener {
         textView.text = mFilterNameList[position]
         container.addView(itemView)
         itemView.setOnTouchListener(this)
+        itemView.tag = position
+        itemView.visibility = View.GONE
         return itemView
     }
 
