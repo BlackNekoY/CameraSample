@@ -1,6 +1,9 @@
 package com.slim.me.camerasample.record.layer.filter
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
+import android.animation.ValueAnimator.REVERSE
 import android.os.Bundle
 import android.support.v4.view.ViewPager
 import android.support.v7.widget.LinearLayoutManager
@@ -76,6 +79,10 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
                         // ViewPager处于静止
                         postLayerEvent(ChangeFilterEvent(mFilterList[selectPos], null))
                         postLayerEvent(CommonLayerEvent(EVENT_FILTER_ON_SCROLL, 1f))
+                        val view = mFilterPager.findViewWithTag<View>(selectPos)
+                        view?.let {
+                            doAnim(it)
+                        }
                     }
                     ViewPager.SCROLL_STATE_DRAGGING -> {}
                     ViewPager.SCROLL_STATE_SETTLING -> {}
@@ -95,19 +102,23 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
 
             override fun onPageSelected(position: Int) {
                 selectPos = position
-                val view = mFilterPager.findViewWithTag<View>(position)
-                view?.let {
-                    doAnim(it)
-                }
             }
         })
     }
 
     private fun doAnim(view: View) {
-        view.visibility = View.VISIBLE
-        val animator = ObjectAnimator.ofFloat(view, "alpha", 1f, 0f)
-        animator.duration = 200
-        animator.startDelay = 500
+        view.visibility = View.GONE
+        val animator = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f)
+        animator.addListener(object : AnimatorListenerAdapter(){
+            override fun onAnimationStart(animation: Animator?) {
+                view.alpha = 0f
+                view.visibility = View.VISIBLE
+            }
+        })
+        animator.repeatCount = 1
+        animator.repeatMode = REVERSE
+        animator.duration = 500
+        animator.startDelay = 200
         animator.start()
     }
 
