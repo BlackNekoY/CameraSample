@@ -12,6 +12,8 @@ import android.opengl.GLSurfaceView;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Surface;
+import android.view.WindowManager;
 
 import com.slim.me.camerasample.R;
 import com.slim.me.camerasample.app.Constants;
@@ -130,6 +132,21 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         }
         CameraHelper.getInstance().stopPreview();
         setPreviewSize();
+        final WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+        switch (wm.getDefaultDisplay().getRotation()) {
+            case Surface.ROTATION_0:
+                CameraHelper.getInstance().setDisplayOrientation(90);
+                break;
+            case Surface.ROTATION_90:
+                CameraHelper.getInstance().setDisplayOrientation(0);
+                break;
+            case Surface.ROTATION_180:
+                CameraHelper.getInstance().setDisplayOrientation(270);
+                break;
+            case Surface.ROTATION_270:
+                CameraHelper.getInstance().setDisplayOrientation(180);
+                break;
+        }
         CameraHelper.getInstance().setSurfaceTexture(mSurfaceTexture);
         CameraHelper.getInstance().startPreview();
     }
@@ -140,7 +157,6 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
             return false;
         }
         CameraHelper.getInstance().setPreviewFormat(ImageFormat.YV12);
-        CameraHelper.getInstance().setDisplayOrientation(90);
         CameraHelper.getInstance().setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         return true;
     }
@@ -194,7 +210,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
             height--;
         }
         return new EncodeConfig(videoFile.getAbsolutePath(), width, height, 2 * 1024 * 1024, 1, 30, 0,
-                44100, 128 * 100);
+                44100, 64000);
     }
 
     @Override

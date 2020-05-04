@@ -447,6 +447,10 @@ public class CameraHelper {
         return mIsOpened;
     }
 
+    public boolean isPreviewing() {
+        return isOpened() && mIsPreviewing;
+    }
+
     private int getCameraId(int id) {
         int cameraId = -1;
         switch (id) {

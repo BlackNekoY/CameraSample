@@ -4,6 +4,7 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.util.Log
+import java.lang.Exception
 import java.nio.ByteBuffer
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
@@ -18,78 +19,72 @@ class AudioDataRecorder {
         private const val CHANNEL_COUNT = 1
     }
 
-    private var mAudioRecord: AudioRecord? = null
-
     private var mRecordThread: AudioEncodeThread? = null
-    private var mBufferSize = 0
-    private var mDurationUs = 0L
     private val mIsRecording: AtomicBoolean = AtomicBoolean(false)
+    private var mSampleRate = 0
 
     fun start(encodeConfig: EncodeConfig, dataQueue: LinkedBlockingQueue<Pair<ByteBuffer, Int>>) {
-        release()
-        mBufferSize = AudioRecord.getMinBufferSize(encodeConfig.audioSampleRate, CHANNEL_CONFIG, AudioFormat.ENCODING_PCM_16BIT)
-        mDurationUs = (1000000 * (mBufferSize.toDouble() / CHANNEL_COUNT / 2 / encodeConfig.audioSampleRate)).toLong()
-        mAudioRecord = AudioRecord(MediaRecorder.AudioSource.MIC, encodeConfig.audioSampleRate, CHANNEL_CONFIG, AudioFormat.ENCODING_PCM_16BIT, mBufferSize)
-        mAudioRecord?.let {
-            startEncodeThread(it, dataQueue)
-            mIsRecording.set(true)
+        if (mIsRecording.get()) {
+            return
         }
-    }
-
-    fun stop() {
-        Log.i(TAG, "stop -- start")
-        mIsRecording.set(false)
-        release()
-        Log.i(TAG, "stop -- end")
-    }
-
-    fun getDurationUs() : Long {
-        return mDurationUs
-    }
-
-    private fun startEncodeThread(audioRecord: AudioRecord, dataQueue: LinkedBlockingQueue<Pair<ByteBuffer, Int>>) {
-        mRecordThread = AudioEncodeThread(audioRecord, dataQueue)
-        mRecordThread?.start()
-    }
-
-    private fun release() {
-        mAudioRecord?.run {
-            stop()
-            release()
-        }
-        mAudioRecord = null
+        mSampleRate = encodeConfig.audioSampleRate
         mRecordThread?.run {
-            if (!isInterrupted) {
+            if (isAlive && !isInterrupted) {
                 interrupt()
             }
         }
-        mRecordThread = null
-        mBufferSize = 0
+        startEncodeThread(dataQueue)
+        mIsRecording.set(true)
     }
 
-    private inner class AudioEncodeThread(private val audioRecord: AudioRecord,
-            private val mDataQueue: LinkedBlockingQueue<Pair<ByteBuffer, Int>>) : Thread("Audio-Record-Thread") {
+    fun stop() {
+        mIsRecording.set(false)
+        mRecordThread?.interrupt()
+        mRecordThread = null
+    }
+
+    private fun startEncodeThread(dataQueue: LinkedBlockingQueue<Pair<ByteBuffer, Int>>) {
+        mRecordThread = AudioEncodeThread(dataQueue)
+        mRecordThread?.start()
+    }
+
+    private inner class AudioEncodeThread(private val mDataQueue: LinkedBlockingQueue<Pair<ByteBuffer, Int>>) : Thread("Audio-Record-Thread") {
+
+        private var audioRecord: AudioRecord? = null
 
         override fun run() {
             android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO)
             // 创建AudioRecord作为音频源
-            audioRecord.startRecording()
-            var readBytes: Int
-            while (!isInterrupted && mIsRecording.get()) {
-                val buf = ByteBuffer.allocateDirect(mBufferSize)
-                buf.clear()
+            val minBufferSize = AudioRecord.getMinBufferSize(mSampleRate, CHANNEL_CONFIG, AudioFormat.ENCODING_PCM_16BIT)
+            audioRecord = AudioRecord(MediaRecorder.AudioSource.MIC, mSampleRate, CHANNEL_CONFIG, AudioFormat.ENCODING_PCM_16BIT, minBufferSize)
+            audioRecord?.run {
+                startRecording()
+                var readBytes: Int
                 try {
-                    readBytes = audioRecord.read(buf, mBufferSize)
-                    buf.position(readBytes)
-                    buf.flip()
-                    mDataQueue.put(Pair(buf, readBytes))
-                } catch (e: InterruptedException) {
-                    // 线程外部终止
-                    e.printStackTrace()
-                    break
+                    while (!isInterrupted && mIsRecording.get()) {
+                        val buf = ByteBuffer.allocateDirect(minBufferSize)
+                        buf.clear()
+                        try {
+                            readBytes = read(buf, minBufferSize)
+                            if (readBytes > 0) {
+                                buf.position(readBytes)
+                                buf.flip()
+                                mDataQueue.put(Pair(buf, readBytes))
+                            }
+                        } catch (e: InterruptedException) {
+                            // 线程外部终止
+                            e.printStackTrace()
+                            break
+                        }
+                    }
+                } catch (e: Exception) {
+                } finally {
+                    stop()
+                    release()
                 }
             }
-            Log.i(TAG, "stop AudioEncodeThread")
+            audioRecord = null
+            Log.i(TAG, "AudioEncodeThread finish")
         }
     }
 }

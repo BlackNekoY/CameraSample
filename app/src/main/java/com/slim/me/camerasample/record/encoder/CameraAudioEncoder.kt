@@ -26,7 +26,7 @@ class CameraAudioEncoder {
     fun startEncode(config: EncodeConfig) {
         mDateQueue = LinkedBlockingQueue()
         mRecorder.start(config, mDateQueue)
-        mProcessor.start(config, mDateQueue, mMuxer!!, mRecorder.getDurationUs())
+        mProcessor.start(config, mDateQueue, mMuxer!!)
     }
 
     fun stopEncode() {

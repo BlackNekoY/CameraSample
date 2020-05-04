@@ -66,7 +66,7 @@ public class CameraVideoEncoder {
     }
 
     private void startEncodeInner(EncodeConfig encodeConfig) {
-
+        prevOutputPTSUs = 0L;
         mVideoBufferInfo = new MediaCodec.BufferInfo();
         // 配置MediaFormat
         MediaFormat format = MediaFormat.createVideoFormat(VIDEO_MIME_TYPE, encodeConfig.width, encodeConfig.height);
@@ -184,8 +184,7 @@ public class CameraVideoEncoder {
                     encodedData.limit(mVideoBufferInfo.offset + mVideoBufferInfo.size);
                     mMuxer.writeVideoData(encodedData, mVideoBufferInfo);
 
-                    Log.d(TAG, "VideoCodec: sent " + mVideoBufferInfo.size + " bytes to muxer, ts=" +
-                            mVideoBufferInfo.presentationTimeUs * 1000);
+                    Log.d(TAG, "VideoCodec: sent " + mVideoBufferInfo.size + " bytes to muxer, ts=" + mVideoBufferInfo.presentationTimeUs);
                 }
 
                 mVideoCodec.releaseOutputBuffer(encoderStatus, false);
@@ -200,6 +199,15 @@ public class CameraVideoEncoder {
                 }
             }
         }
+    }
+
+    private long prevOutputPTSUs = 0L;
+    private long getPts() {
+        long result = System.nanoTime() / 1000L;
+        if (result < prevOutputPTSUs) {
+            result = (prevOutputPTSUs - result) + result;
+        }
+        return result;
     }
 
     private void release() {
