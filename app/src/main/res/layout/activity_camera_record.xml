@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".record.CameraRecordActivity">
+    tools:context=".record.CameraPreviewActivity">
 
     <com.slim.me.camerasample.record.PreviewLayout
         android:id="@+id/preview"

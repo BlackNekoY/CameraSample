@@ -11,6 +11,7 @@ import com.slim.me.camerasample.camera.CameraHelper
 import com.slim.me.camerasample.record.layer.BaseLayer
 import com.slim.me.camerasample.record.layer.LayerManager
 import com.slim.me.camerasample.record.layer.event.ChangeFilterEvent
+import com.slim.me.camerasample.record.layer.event.CommonLayerEvent
 import com.slim.me.camerasample.record.layer.event.ILayerEvent
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_CHANGE_FILTER
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_DESTROY
@@ -18,6 +19,8 @@ import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_F
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_LIST_SHOW
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_ON_SCROLL
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FOCUS_PRESS
+import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_START_RECORD
+import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_STOP_RECORD
 import com.slim.me.camerasample.util.UIUtil
 
 class RecordLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerManager),
@@ -65,16 +68,16 @@ class RecordLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
     }
 
     override fun onStartRecorder(): Boolean {
-        mRecordView.startRecord()
+        startRecord()
         return true
     }
 
     override fun onStopRecorder(isLongClick: Boolean) {
-        mRecordView.stopRecord()
+        stopRecord()
     }
 
     override fun onHoldRecorder(): Boolean {
-        mRecordView.startRecord()
+        startRecord()
         return true
     }
 
@@ -82,7 +85,17 @@ class RecordLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
     }
 
     override fun onFinish(isLongClick: Boolean) {
+        stopRecord()
+    }
+
+    private fun startRecord() {
+        mRecordView.startRecord()
+        postLayerEvent(CommonLayerEvent(EVENT_START_RECORD))
+    }
+
+    private fun stopRecord() {
         mRecordView.stopRecord()
+        postLayerEvent(CommonLayerEvent(EVENT_STOP_RECORD))
     }
 
     private fun focus(x: Float, y: Float, size: Int, width: Int, height: Int) {

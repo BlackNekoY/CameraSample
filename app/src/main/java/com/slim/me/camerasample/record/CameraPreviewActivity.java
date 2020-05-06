@@ -20,7 +20,7 @@ import com.slim.me.camerasample.camera.CameraHelper;
 
 import static com.slim.me.camerasample.util.UIUtil.getStatusBarHeight;
 
-public class CameraRecordActivity extends AppCompatActivity {
+public class CameraPreviewActivity extends AppCompatActivity {
 
     private PreviewLayout mPreviewLayout;
     private OrientationEventListener mListener;
