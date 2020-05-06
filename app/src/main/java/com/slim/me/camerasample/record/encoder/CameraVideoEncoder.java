@@ -184,7 +184,7 @@ public class CameraVideoEncoder {
                     encodedData.limit(mVideoBufferInfo.offset + mVideoBufferInfo.size);
                     mMuxer.writeVideoData(encodedData, mVideoBufferInfo);
 
-                    Log.d(TAG, "VideoCodec: sent " + mVideoBufferInfo.size + " bytes to muxer, ts=" + mVideoBufferInfo.presentationTimeUs);
+                    Log.d(TAG, "VideoCodec: sent " + mVideoBufferInfo.size + " bytes to muxer, us=" + mVideoBufferInfo.presentationTimeUs);
                 }
 
                 mVideoCodec.releaseOutputBuffer(encoderStatus, false);

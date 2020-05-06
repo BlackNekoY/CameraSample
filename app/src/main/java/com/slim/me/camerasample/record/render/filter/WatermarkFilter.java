@@ -10,6 +10,8 @@ import com.slim.me.camerasample.util.OpenGLUtils;
 public class WatermarkFilter extends GPUImageFilter {
 
     private Bitmap mWatermark;
+    private int mBitmapWidth;
+    private int mBitmapHeight;
     private int mWatermarkTexture;
 
     private GPUImageFilter mWaterFilter;
@@ -17,6 +19,8 @@ public class WatermarkFilter extends GPUImageFilter {
 
     public WatermarkFilter(Bitmap watermark) {
         mWatermark = watermark;
+        mBitmapWidth = watermark.getWidth();
+        mBitmapHeight = watermark.getHeight();
     }
 
     @Override
@@ -36,7 +40,7 @@ public class WatermarkFilter extends GPUImageFilter {
 
     @Override
     protected void onAfterDraw(int textureId, float[] cameraMatrix, float[] textureMatrix) {
-        GLES30.glViewport(outputWidth - 300, 300, 200, 200);
+        GLES30.glViewport(outputWidth - mBitmapWidth - 100, mBitmapHeight + 100, mBitmapWidth, mBitmapHeight);
         Matrix.setIdentityM(mWatermarkRotateMatrix, 0);
         Matrix.translateM(mWatermarkRotateMatrix, 0, 0f, 1f, 0);
         Matrix.rotateM(mWatermarkRotateMatrix, 0, 180, 1.0f, 0.0f, 0.0f);

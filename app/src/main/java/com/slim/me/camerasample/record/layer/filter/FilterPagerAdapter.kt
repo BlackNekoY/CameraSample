@@ -27,10 +27,10 @@ class FilterPagerAdapter : PagerAdapter(), View.OnTouchListener {
         val itemView = LayoutInflater.from(container.context).inflate(R.layout.filter_pager_item_view, container, false)
         val textView = itemView.findViewById<TextView>(R.id.name)
         textView.text = mFilterNameList[position]
+        textView.tag = position
+        textView.visibility = View.GONE
         container.addView(itemView)
         itemView.setOnTouchListener(this)
-        itemView.tag = position
-        itemView.visibility = View.GONE
         return itemView
     }
 

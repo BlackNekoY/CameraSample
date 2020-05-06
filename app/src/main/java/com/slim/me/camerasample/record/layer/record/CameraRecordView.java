@@ -90,7 +90,7 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         // 初始化滤镜 渲染器
         mTexture2DRender = new Texture2DRender();
         mTexture2DRender.setFilter(new OESFilter());
-        mTexture2DRender.setWatermarkFilter(new WatermarkFilter(BitmapFactory.decodeResource(getResources(), R.drawable.awesomeface)));
+        mTexture2DRender.setWatermarkFilter(new WatermarkFilter(BitmapFactory.decodeResource(getResources(), R.drawable.watermark)));
         mTexture2DRender.init();
 
         // 初始化相机纹理

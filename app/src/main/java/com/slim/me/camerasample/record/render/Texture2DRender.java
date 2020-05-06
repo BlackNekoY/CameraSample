@@ -1,7 +1,6 @@
 package com.slim.me.camerasample.record.render;
 
 import android.opengl.GLES30;
-import android.util.Log;
 
 import com.slim.me.camerasample.record.render.filter.GPUImageFilter;
 import com.slim.me.camerasample.record.render.filter.ImageFilterGroup;
