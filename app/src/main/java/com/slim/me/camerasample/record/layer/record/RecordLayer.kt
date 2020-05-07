@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import com.slim.me.camerasample.R
 import com.slim.me.camerasample.camera.CameraHelper
+import com.slim.me.camerasample.record.encoder.EncodeConfig
 import com.slim.me.camerasample.record.layer.BaseLayer
 import com.slim.me.camerasample.record.layer.LayerManager
 import com.slim.me.camerasample.record.layer.event.ChangeFilterEvent
@@ -15,8 +16,7 @@ import com.slim.me.camerasample.record.layer.event.CommonLayerEvent
 import com.slim.me.camerasample.record.layer.event.ILayerEvent
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_CHANGE_FILTER
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_DESTROY
-import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_LIST_HIDE
-import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_LIST_SHOW
+import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_ICON_CLICK
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_ON_SCROLL
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FOCUS_PRESS
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_START_RECORD
@@ -24,7 +24,7 @@ import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_S
 import com.slim.me.camerasample.util.UIUtil
 
 class RecordLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerManager),
-        RecorderButton.OnRecorderButtonListener {
+        RecorderButton.OnRecorderButtonListener, CameraRecordView.OnRecordCallback {
 
     private var mRecordView: CameraRecordView = rootView.findViewById(R.id.record_view)
     private var mRecorderButton: RecorderButton = rootView.findViewById(R.id.record_btn)
@@ -36,6 +36,7 @@ class RecordLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
     init {
         mRecorderButton.setListener(this)
         mRecorderButton.setCanPause(false)
+        mRecordView.setRecordCallback(this)
     }
 
     override fun handleLayerEvent(event: ILayerEvent) {
@@ -48,13 +49,11 @@ class RecordLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
                 val x = event.getParam(Float::class.java) ?: return
                 mRecordView.changeScrollX(x)
             }
-            EVENT_FILTER_LIST_SHOW -> {
-                mRecorderButton.visibility = GONE
-            }
-            EVENT_FILTER_LIST_HIDE -> {
-                mRecorderButton.visibility = VISIBLE
-            }
+            EVENT_FILTER_ICON_CLICK -> mRecorderButton.visibility = if (mRecorderButton.isShown) GONE else VISIBLE
             EVENT_FOCUS_PRESS -> {
+                if (mRecorderButton.visibility != VISIBLE) {
+                    mRecorderButton.visibility = VISIBLE
+                }
                 val bundle = event.getParam(Bundle::class.java) ?: return
                 val x = bundle.getFloat("x")
                 val y = bundle.getFloat("y")
@@ -88,14 +87,24 @@ class RecordLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
         stopRecord()
     }
 
+    override fun onStartRecord() {
+        mRecordView.post {
+            postLayerEvent(CommonLayerEvent(EVENT_START_RECORD))
+        }
+    }
+
+    override fun onStopRecord(encodeConfig: EncodeConfig) {
+        mRecordView.post {
+            postLayerEvent(CommonLayerEvent(EVENT_STOP_RECORD, encodeConfig.outputPath))
+        }
+    }
+
     private fun startRecord() {
         mRecordView.startRecord()
-        postLayerEvent(CommonLayerEvent(EVENT_START_RECORD))
     }
 
     private fun stopRecord() {
         mRecordView.stopRecord()
-        postLayerEvent(CommonLayerEvent(EVENT_STOP_RECORD))
     }
 
     private fun focus(x: Float, y: Float, size: Int, width: Int, height: Int) {

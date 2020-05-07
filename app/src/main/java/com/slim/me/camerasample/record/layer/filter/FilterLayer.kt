@@ -15,15 +15,14 @@ import com.slim.me.camerasample.record.layer.LayerManager
 import com.slim.me.camerasample.record.layer.event.ChangeFilterEvent
 import com.slim.me.camerasample.record.layer.event.CommonLayerEvent
 import com.slim.me.camerasample.record.layer.event.ILayerEvent
-import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_LIST_HIDE
-import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_LIST_SHOW
+import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_ICON_CLICK
 import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FILTER_ON_SCROLL
+import com.slim.me.camerasample.record.layer.event.ILayerEvent.Companion.EVENT_FOCUS_PRESS
 import com.slim.me.camerasample.record.render.filter.*
 
-class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerManager), View.OnClickListener,
+class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerManager),
         FilterListAdapter.FilterChooseCallback, FilterPagerAdapter.OnScreenClickCallback {
     private val mRoot: View = rootView
-    private val mFilterView: View = rootView.findViewById(R.id.filter)
     private val mFilterListView: RecyclerView = rootView.findViewById(R.id.filter_list)
     private val mFilterPager: ViewPager = rootView.findViewById(R.id.filter_pager)
 
@@ -63,7 +62,6 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
     }
 
     private fun initLayer() {
-        mFilterView.setOnClickListener(this)
         val layoutManager = LinearLayoutManager(mRoot.context)
         layoutManager.orientation = LinearLayoutManager.HORIZONTAL
         mFilterListView.layoutManager = layoutManager
@@ -132,26 +130,21 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
         postLayerEvent(ChangeFilterEvent(filter, null))
     }
 
-    override fun handleLayerEvent(event: ILayerEvent) {}
+    override fun handleLayerEvent(event: ILayerEvent) {
+        when (event.getType()) {
+            EVENT_FILTER_ICON_CLICK -> mFilterListView.visibility = if (mFilterListView.isShown) View.GONE else View.VISIBLE
+            EVENT_FOCUS_PRESS -> {
+                if (mFilterListView.isShown) {
+                    mFilterListView.visibility = View.GONE
+                }
+            }
+        }
+    }
 
     override fun onScreenClick(x: Float, y: Float) {
         val bundle = Bundle()
         bundle.putFloat("x", x)
         bundle.putFloat("y", y)
-        postLayerEvent(CommonLayerEvent(ILayerEvent.EVENT_FOCUS_PRESS, bundle))
-    }
-
-    override fun onClick(v: View) {
-        when (v.id) {
-            R.id.filter -> {
-                if (mFilterListView.isShown) {
-                    mFilterListView.visibility = View.GONE
-                    postLayerEvent(CommonLayerEvent(EVENT_FILTER_LIST_HIDE))
-                } else {
-                    mFilterListView.visibility = View.VISIBLE
-                    postLayerEvent(CommonLayerEvent(EVENT_FILTER_LIST_SHOW))
-                }
-            }
-        }
+        postLayerEvent(CommonLayerEvent(EVENT_FOCUS_PRESS, bundle))
     }
 }

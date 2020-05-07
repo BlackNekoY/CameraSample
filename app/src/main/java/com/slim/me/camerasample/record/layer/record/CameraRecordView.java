@@ -53,6 +53,8 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
     private final int STATE_RECORD_ON = 1;
     private final int STATE_RECORD_OFF = 2;
     private int mRecordState = STATE_RECORD_OFF;
+    private EncodeConfig mEncodeConfig;
+    private OnRecordCallback mCallback;
 
     public CameraRecordView(Context context) {
         super(context);
@@ -166,10 +168,13 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
             switch (mRecordState) {
                 case STATE_RECORD_OFF:
                     // 开始录制，设置录制线程的ShareEGLContext为渲染线程的EGLContext，因为textureID为渲染线程的
-                    EncodeConfig encodeConfig = createEncodeConfig();
-                    encodeConfig.updateEglContext(EGL14.eglGetCurrentContext());
-                    mRecorder.startRecord(encodeConfig);
+                    mEncodeConfig = createEncodeConfig();
+                    mEncodeConfig.updateEglContext(EGL14.eglGetCurrentContext());
+                    mRecorder.startRecord(mEncodeConfig);
                     mRecordState = STATE_RECORD_ON;
+                    if (mCallback != null) {
+                        mCallback.onStartRecord();
+                    }
                     break;
                 case STATE_RECORD_ON:
                     break;
@@ -182,6 +187,9 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
                 case STATE_RECORD_ON:
                     mRecorder.stopRecord();
                     mRecordState = STATE_RECORD_OFF;
+                    if (mCallback != null) {
+                        mCallback.onStopRecord(mEncodeConfig);
+                    }
                     break;
             }
         }
@@ -243,5 +251,14 @@ public class CameraRecordView extends GLSurfaceView implements GLSurfaceView.Ren
         if (mTexture2DRender != null) {
             mTexture2DRender.setScrollX(x);
         }
+    }
+
+    public void setRecordCallback(OnRecordCallback callback) {
+        mCallback = callback;
+    }
+
+    interface OnRecordCallback {
+        void onStartRecord();
+        void onStopRecord(EncodeConfig encodeConfig);
     }
 }

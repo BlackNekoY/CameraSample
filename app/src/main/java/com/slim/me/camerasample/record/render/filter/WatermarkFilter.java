@@ -40,7 +40,7 @@ public class WatermarkFilter extends GPUImageFilter {
 
     @Override
     protected void onAfterDraw(int textureId, float[] cameraMatrix, float[] textureMatrix) {
-        GLES30.glViewport(outputWidth - mBitmapWidth - 100, mBitmapHeight + 100, mBitmapWidth, mBitmapHeight);
+        GLES30.glViewport(100, mBitmapHeight + 100, mBitmapWidth, mBitmapHeight);
         Matrix.setIdentityM(mWatermarkRotateMatrix, 0);
         Matrix.translateM(mWatermarkRotateMatrix, 0, 0f, 1f, 0);
         Matrix.rotateM(mWatermarkRotateMatrix, 0, 180, 1.0f, 0.0f, 0.0f);
