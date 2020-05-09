@@ -3,8 +3,8 @@ package com.slim.me.camerasample.record.layer.record;
 import android.media.MediaMuxer;
 import android.util.Log;
 
-import com.slim.me.camerasample.record.encoder.CameraAudioEncoder;
-import com.slim.me.camerasample.record.encoder.CameraVideoEncoder;
+import com.slim.me.camerasample.record.encoder.AudioEncoder;
+import com.slim.me.camerasample.record.encoder.VideoEncoder;
 import com.slim.me.camerasample.record.encoder.EncodeConfig;
 import com.slim.me.camerasample.record.encoder.MuxerWrapper;
 
@@ -14,13 +14,13 @@ public class CameraRecorder {
 
     public static final String TAG = "CameraRecorder";
 
-    private CameraVideoEncoder mVideoEncoder;
-    private CameraAudioEncoder mAudioEncoder;
+    private VideoEncoder mVideoEncoder;
+    private AudioEncoder mAudioEncoder;
     private MuxerWrapper mMuxerWrapper;
 
     public CameraRecorder() {
-        mVideoEncoder = new CameraVideoEncoder();
-        mAudioEncoder = new CameraAudioEncoder();
+        mVideoEncoder = new VideoEncoder();
+        mAudioEncoder = new AudioEncoder();
     }
 
     public void startRecord(EncodeConfig encodeConfig) {

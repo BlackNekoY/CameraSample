@@ -8,7 +8,7 @@ import java.util.concurrent.LinkedBlockingQueue
 /**
  * 摄像机音频录制器
  */
-class CameraAudioEncoder {
+class AudioEncoder {
 
     private val mRecorder: AudioDataRecorder = AudioDataRecorder()
     private val mProcessor: AudioDataProcessor = AudioDataProcessor()
@@ -16,7 +16,7 @@ class CameraAudioEncoder {
     private var mDateQueue: LinkedBlockingQueue<Pair<ByteBuffer, Int>> = LinkedBlockingQueue()
 
     companion object {
-        const val TAG = "CameraAudioEncoder"
+        const val TAG = "AudioEncoder"
     }
 
     fun setMuxer(muxer: MuxerWrapper) {

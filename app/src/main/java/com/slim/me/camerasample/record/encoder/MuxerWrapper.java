@@ -17,7 +17,7 @@ public class MuxerWrapper {
     private int mVideoTrackIndex = -1;
     private int mAudioTrackIndex = -1;
 
-    private boolean mIsStarted = false;
+    private volatile boolean mIsStarted = false;
     private boolean mAudioReleased = false;
     private boolean mVideoReleased = false;
 

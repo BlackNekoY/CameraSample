@@ -1,4 +1,4 @@
-package com.slim.me.camerasample.task;
+package com.slim.me.camerasample.util;
 
 import android.os.Handler;
 import android.os.Looper;

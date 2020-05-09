@@ -16,7 +16,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.slim.me.camerasample.task.WeakHandler;
+import com.slim.me.camerasample.util.WeakHandler;
 import com.slim.me.camerasample.util.FastClickUtils;
 import com.slim.me.camerasample.util.ToastUtils;
 import com.slim.me.camerasample.util.UIUtil;

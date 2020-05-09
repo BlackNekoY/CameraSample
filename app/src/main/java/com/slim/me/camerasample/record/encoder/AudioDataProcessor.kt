@@ -176,6 +176,13 @@ class AudioDataProcessor {
                     Log.d(TAG, "AudioCodec: encoder output format changed: $audioFormat")
                     muxer.addAudioTrack(audioFormat)
                     muxer.start()
+                    if (muxer.isStarted) {
+                        synchronized(muxer) {
+                            while (!muxer.isStarted) {
+                                sleep(100)
+                            }
+                        }
+                    }
                 } else if (encoderStatus < 0) {
                     // 其他未知错误，忽略
                     Log.w(TAG, "AudioCodec: unexpected result from encoder.dequeueOutputBuffer: $encoderStatus")
