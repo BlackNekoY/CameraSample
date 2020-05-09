@@ -18,8 +18,8 @@ public class MuxerWrapper {
     private int mAudioTrackIndex = -1;
 
     private volatile boolean mIsStarted = false;
-    private boolean mAudioReleased = false;
-    private boolean mVideoReleased = false;
+    private volatile boolean mAudioReleased = false;
+    private volatile boolean mVideoReleased = false;
 
     public MuxerWrapper(@NonNull MediaMuxer muxer) {
         mMuxer = muxer;
@@ -45,11 +45,15 @@ public class MuxerWrapper {
     }
 
     public void writeAudioData(@NonNull ByteBuffer byteBuf, @NonNull MediaCodec.BufferInfo bufferInfo) {
-        mMuxer.writeSampleData(mAudioTrackIndex, byteBuf, bufferInfo);
+        if (!mAudioReleased) {
+            mMuxer.writeSampleData(mAudioTrackIndex, byteBuf, bufferInfo);
+        }
     }
 
     public void writeVideoData (@NonNull ByteBuffer byteBuf, @NonNull MediaCodec.BufferInfo bufferInfo) {
-        mMuxer.writeSampleData(mVideoTrackIndex, byteBuf, bufferInfo);
+        if (!mVideoReleased) {
+            mMuxer.writeSampleData(mVideoTrackIndex, byteBuf, bufferInfo);
+        }
     }
 
     public void releaseAudio() {

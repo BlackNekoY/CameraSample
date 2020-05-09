@@ -25,12 +25,8 @@ public class CameraRecorder {
 
     public void startRecord(EncodeConfig encodeConfig) {
         prepareMuxer(encodeConfig);
-
-        mVideoEncoder.setMuxer(mMuxerWrapper);
-        mAudioEncoder.setMuxer(mMuxerWrapper);
-
-        mVideoEncoder.startEncode(encodeConfig);
-        mAudioEncoder.startEncode(encodeConfig);
+        mVideoEncoder.startEncode(encodeConfig, mMuxerWrapper);
+        mAudioEncoder.startEncode(encodeConfig, mMuxerWrapper);
     }
 
     public void stopRecord() {

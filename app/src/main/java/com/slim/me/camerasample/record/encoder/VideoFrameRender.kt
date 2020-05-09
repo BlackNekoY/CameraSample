@@ -1,19 +1,39 @@
 package com.slim.me.camerasample.record.encoder
 
 import android.media.MediaCodec
+import android.media.MediaCodecInfo
+import android.media.MediaFormat
 import android.util.Log
+import android.view.Surface
+import java.io.IOException
+import java.lang.IllegalStateException
 import java.lang.Thread.sleep
 import java.util.concurrent.atomic.AtomicBoolean
 
-class VideoDataProcessor(private val mVideoCodec: MediaCodec,
-                         private val mBufferInfo: MediaCodec.BufferInfo,
-                         private val mMuxer: MuxerWrapper) {
+class VideoFrameRender{
 
     private var mProcessThread: ProcessThread? = null
     private var mIsStart: AtomicBoolean = AtomicBoolean(false)
 
+    private var mEncodeConfig: EncodeConfig? = null
+    private var mVideoCodec: MediaCodec? = null
+    private var mVideoBufferInfo: MediaCodec.BufferInfo? = null
+    private var mSurface: Surface? = null
+    private var mMuxer: MuxerWrapper? = null
+
     companion object {
-        const val TAG = "VideoDataProcessor"
+        private const val TAG = "VideoFrameRender"
+        private const val VIDEO_MIME_TYPE = "video/avc"
+    }
+
+    fun getInputSurface() : Surface {
+        return mSurface ?: throw IllegalStateException("can not getInputSurface before prepare.")
+    }
+
+    fun prepare(encodeConfig: EncodeConfig, muxer: MuxerWrapper) {
+        mEncodeConfig = encodeConfig
+        mMuxer = muxer
+        prepareVideoCodec(encodeConfig)
     }
 
     fun start() {
@@ -33,33 +53,47 @@ class VideoDataProcessor(private val mVideoCodec: MediaCodec,
         mProcessThread = null
     }
 
+    private fun prepareVideoCodec(encodeConfig: EncodeConfig) {
+        mVideoBufferInfo = MediaCodec.BufferInfo()
+        // 配置MediaFormat
+        val format = MediaFormat.createVideoFormat(VIDEO_MIME_TYPE, encodeConfig.width, encodeConfig.height)
+        format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
+        format.setInteger(MediaFormat.KEY_BIT_RATE, encodeConfig.videoBitRate)
+        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, encodeConfig.videoIFrameRate)
+        format.setInteger(MediaFormat.KEY_FRAME_RATE, encodeConfig.videoFrameRate)
+        // 创建MediaCodec
+        try {
+            mVideoCodec = MediaCodec.createEncoderByType(VIDEO_MIME_TYPE)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        mVideoCodec?.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        mSurface = mVideoCodec?.createInputSurface()
+    }
+
     private fun release() {
         // 释放VideoCodec
         try {
-            mVideoCodec.stop()
-        } catch (e: Exception) {
-            Log.w(TAG, "mVideoCodec stop exception:$e")
-        }
-
-        try {
-            mVideoCodec.release()
+            mVideoCodec?.stop()
+            mVideoCodec?.release()
+            mSurface?.release()
         } catch (e: Exception) {
             Log.w(TAG, "mVideoCodec release exception:$e")
         }
-
-        Log.d(TAG, "release video codec.")
     }
 
     private fun drainEncoder(endOfStream: Boolean) {
-        val TIMEOUT_USEC = 10000
+        val videoCodec = mVideoCodec ?: return
+        val bufferInfo = mVideoBufferInfo ?: return
+
         if (endOfStream) {
-            mVideoCodec.signalEndOfInputStream()
+            videoCodec.signalEndOfInputStream()
         }
         // 有一些机器，signalEndOfInputStream之后一直收不到BUFFER_FLAG_END_OF_STREAM，导致录制无法结束。这里添加一个计数，如果连续100次dequeueOutputBuffer还没有结束，就直接抛出异常。
         var endTryTimes = 0
-        var encoderOutputBuffers = mVideoCodec.outputBuffers
+        var encoderOutputBuffers = videoCodec.outputBuffers
         while (true) {
-            val encoderStatus = mVideoCodec.dequeueOutputBuffer(mBufferInfo, TIMEOUT_USEC.toLong())
+            val encoderStatus = videoCodec.dequeueOutputBuffer(bufferInfo, 10000L)
             if (encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 // 当前队列数据已处理完，等待surface更新，跳出循环。
                 if (!endOfStream) {
@@ -74,17 +108,20 @@ class VideoDataProcessor(private val mVideoCodec: MediaCodec,
                 }
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
                 // not expected for an encoder
-                encoderOutputBuffers = mVideoCodec.outputBuffers
+                encoderOutputBuffers = videoCodec.outputBuffers
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 // 只有在第一次写入视频时会到这里
-                val videoFormat = mVideoCodec.outputFormat
+                val videoFormat = videoCodec.outputFormat
                 Log.d(TAG, "VideoCodec: encoder output format changed: $videoFormat")
-                mMuxer.addVideoTrack(videoFormat)
-                mMuxer.start()
-                if (!mMuxer.isStarted) {
-                    synchronized(mMuxer) {
-                        while (!mMuxer.isStarted) {
-                            sleep(100)
+
+                mMuxer?.run {
+                    addVideoTrack(videoFormat)
+                    start()
+                    if (!isStarted) {
+                        synchronized(this) {
+                            while (!isStarted) {
+                                sleep(100)
+                            }
                         }
                     }
                 }
@@ -99,29 +136,30 @@ class VideoDataProcessor(private val mVideoCodec: MediaCodec,
                         ?: throw RuntimeException("VideoCodec: encoderOutputBuffer " + encoderStatus +
                                 " was null")
 
-                if (mBufferInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG != 0) {
+                if (bufferInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG != 0) {
                     // The codec config data was pulled out and fed to the muxer when we got
                     // the INFO_OUTPUT_FORMAT_CHANGED status.  Ignore it.
                     Log.d(TAG, "VideoCodec: ignoring BUFFER_FLAG_CODEC_CONFIG")
-                    mBufferInfo.size = 0
+                    bufferInfo.size = 0
                 }
 
-                if (mBufferInfo.flags and MediaCodec.BUFFER_FLAG_KEY_FRAME != 0) {
+                if (bufferInfo.flags and MediaCodec.BUFFER_FLAG_KEY_FRAME != 0) {
                     Log.d(TAG, "VideoCodec: sent I-FRAME")
                 }
 
-                if (mBufferInfo.size != 0 && mMuxer.isStarted) {
-                    // adjust the ByteBuffer values to match BufferInfo (not needed?)
-                    encodedData.position(mBufferInfo.offset)
-                    encodedData.limit(mBufferInfo.offset + mBufferInfo.size)
-                    mMuxer.writeVideoData(encodedData, mBufferInfo)
 
-                    Log.d(TAG, "VideoCodec: sent " + mBufferInfo.size + " bytes to muxer, us=" + mBufferInfo.presentationTimeUs)
+                if (bufferInfo.size != 0 && mMuxer?.isStarted == true) {
+                    // adjust the ByteBuffer values to match BufferInfo (not needed?)
+                    encodedData.position(bufferInfo.offset)
+                    encodedData.limit(bufferInfo.offset + bufferInfo.size)
+                    mMuxer?.writeVideoData(encodedData, bufferInfo)
+
+                    Log.d(TAG, "VideoCodec: sent " + bufferInfo.size + " bytes to muxer, us=" + bufferInfo.presentationTimeUs)
                 }
 
-                mVideoCodec.releaseOutputBuffer(encoderStatus, false)
+                videoCodec.releaseOutputBuffer(encoderStatus, false)
 
-                if (mBufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
+                if (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
                     if (!endOfStream) {
                         Log.w(TAG, "VideoCodec: reached end of stream unexpectedly")
                     } else {
@@ -136,7 +174,7 @@ class VideoDataProcessor(private val mVideoCodec: MediaCodec,
     inner class ProcessThread : Thread("Video-Process-Thread") {
         override fun run() {
             try {
-                mVideoCodec.start()
+                mVideoCodec?.start()
                 while (!isInterrupted && mIsStart.get()) {
                     try {
                         drainEncoder(false)
@@ -149,11 +187,7 @@ class VideoDataProcessor(private val mVideoCodec: MediaCodec,
             } finally {
                 drainEncoder(false)
                 drainEncoder(true)
-                try {
-                    release()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                release()
             }
         }
     }

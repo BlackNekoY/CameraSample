@@ -57,8 +57,6 @@ class AudioDataProcessor {
 
         private var mAudioCodec: MediaCodec? = null
         private var mAudioBuffInfo: MediaCodec.BufferInfo? = null
-        private var mCount = 0
-        private var mFirstPts = 0L
 
         private fun prepareCodec(encodeConfig: EncodeConfig) {
             try {

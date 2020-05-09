@@ -1,12 +1,12 @@
 package com.slim.me.camerasample.record.encoder
 
-import android.util.Log
-
 import java.nio.ByteBuffer
 import java.util.concurrent.LinkedBlockingQueue
 
 /**
  * 摄像机音频录制器
+ * 1. AudioDataRecorder -> 起音频录制线程用于AudioRecord，作为AudioCodec数据提供方
+ * 2. AudioDataProcessor -> 起编码线程用于AudioCodec encode
  */
 class AudioEncoder {
 
@@ -19,21 +19,16 @@ class AudioEncoder {
         const val TAG = "AudioEncoder"
     }
 
-    fun setMuxer(muxer: MuxerWrapper) {
+    fun startEncode(config: EncodeConfig, muxer: MuxerWrapper) {
         mMuxer = muxer
-    }
-
-    fun startEncode(config: EncodeConfig) {
         mDateQueue = LinkedBlockingQueue()
         mRecorder.start(config, mDateQueue)
-        mProcessor.start(config, mDateQueue, mMuxer!!)
+        mProcessor.start(config, mDateQueue, muxer)
     }
 
     fun stopEncode() {
-        Log.i(TAG, "stopEncode -- start")
         mRecorder.stop()
         mProcessor.stop()
-        mMuxer!!.releaseAudio()
-        Log.i(TAG, "stopEncode -- end")
+        mMuxer?.releaseAudio()
     }
 }
