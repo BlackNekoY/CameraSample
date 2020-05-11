@@ -22,15 +22,15 @@ class VideoEncoder {
         mFrameRender = VideoFrameRender()
         mFrameProcessor = VideoFrameProcessor()
 
-        mFrameRender?.prepare(encodeConfig, muxer)
-        mFrameProcessor?.prepare(encodeConfig, mFrameRender?.getInputSurface()!!)
+        mFrameProcessor?.prepare(encodeConfig, muxer)
+        mFrameRender?.prepare(encodeConfig, mFrameProcessor?.getInputSurface()!!)
 
         mFrameProcessor?.start()
         mFrameRender?.start()
     }
 
     fun onVideoFrameUpdate(textureId: Int) {
-        mFrameProcessor?.onVideoFrameUpdate(textureId)
+        mFrameRender?.onVideoFrameUpdate(textureId)
     }
 
     fun stopEncode() {
