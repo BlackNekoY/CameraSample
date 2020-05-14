@@ -1,12 +1,12 @@
 package com.slim.me.camerasample.record.layer.action
 
 import android.content.Intent
-import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import com.slim.me.camerasample.R
-import com.slim.me.camerasample.edit.EditActivity
+import com.slim.me.camerasample.edit.EditVideoActivity
+import com.slim.me.camerasample.edit.EditVideoParam
 import com.slim.me.camerasample.record.layer.BaseLayer
 import com.slim.me.camerasample.record.layer.LayerManager
 import com.slim.me.camerasample.record.layer.event.CommonLayerEvent
@@ -53,8 +53,9 @@ class ActionLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
             }
             R.id.next -> {
                 mVideoPath?.let {
-                    val intent = Intent(v.context, EditActivity::class.java)
-                    intent.putExtra(EditActivity.VIDEO_PATH, it)
+                    val editParams = EditVideoParam(it)
+                    val intent = Intent(v.context, EditVideoActivity::class.java)
+                    intent.putExtra(EditVideoActivity.EDIT_PARAMS, editParams)
                     v.context.startActivity(intent)
                 }
             }
