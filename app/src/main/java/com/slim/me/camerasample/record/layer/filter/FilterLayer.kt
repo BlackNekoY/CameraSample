@@ -77,10 +77,6 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
                         // ViewPager处于静止
                         postLayerEvent(ChangeFilterEvent(mFilterList[selectPos], null))
                         postLayerEvent(CommonLayerEvent(EVENT_FILTER_ON_SCROLL, 1f))
-                        val view = mFilterPager.findViewWithTag<View>(selectPos)
-                        view?.let {
-                            doAnim(it)
-                        }
                     }
                     ViewPager.SCROLL_STATE_DRAGGING -> {}
                     ViewPager.SCROLL_STATE_SETTLING -> {}
@@ -102,22 +98,6 @@ class FilterLayer(layerManager: LayerManager, rootView: View) : BaseLayer(layerM
                 selectPos = position
             }
         })
-    }
-
-    private fun doAnim(view: View) {
-        view.visibility = View.GONE
-        val animator = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f)
-        animator.addListener(object : AnimatorListenerAdapter(){
-            override fun onAnimationStart(animation: Animator?) {
-                view.alpha = 0f
-                view.visibility = View.VISIBLE
-            }
-        })
-        animator.repeatCount = 1
-        animator.repeatMode = REVERSE
-        animator.duration = 500
-        animator.startDelay = 200
-        animator.start()
     }
 
     private fun createFilterGroup(vararg filters: GPUImageFilter) : ImageFilterGroup {

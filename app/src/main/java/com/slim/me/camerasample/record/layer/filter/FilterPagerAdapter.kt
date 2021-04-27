@@ -28,7 +28,6 @@ class FilterPagerAdapter : PagerAdapter(), View.OnTouchListener {
         val textView = itemView.findViewById<TextView>(R.id.name)
         textView.text = mFilterNameList[position]
         textView.tag = position
-        textView.visibility = View.GONE
         container.addView(itemView)
         itemView.setOnTouchListener(this)
         return itemView
