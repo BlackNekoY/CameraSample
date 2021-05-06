@@ -5,18 +5,49 @@ import android.opengl.GLES30;
 import com.slim.me.camerasample.record.render.filter.GPUImageFilter;
 import com.slim.me.camerasample.record.render.filter.ImageFilterGroup;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class Texture2DRender {
 
+    /**
+     * 默认滤镜，用于拷贝texture，从FboA -> FboB
+     */
     private GPUImageFilter mCopyFilter;
+
+    /**
+     * 左半部分渲染滤镜
+     */
     private GPUImageFilter mLeftFilter;
+
+    /**
+     * 又半部分渲染滤镜
+     */
     private GPUImageFilter mRightFilter;
+
+    /**
+     * 水印，和滤镜链无关的最后一道滤镜
+     */
     private GPUImageFilter mWatermarkFilter;
+
+    private final ArrayList<Action> mActions = new ArrayList<>();
+    private final Action mDrawTextureAction = new Action() {
+        @Override
+        public void doAction(int textureId, float[] cameraMatrix, float[] textureMatrix) {
+            drawTextureInner(textureId, cameraMatrix, textureMatrix);
+        }
+    };
+
+    private final Action mDrawWaterMarkAction = new Action() {
+        @Override
+        public void doAction(int textureId, float[] cameraMatrix, float[] textureMatrix) {
+            drawWaterMark(textureId, cameraMatrix, textureMatrix);
+        }
+    };
 
     private final LinkedList<Runnable> mPendingGLThreadTask = new LinkedList<>();
     private final LinkedList<FrameBuffer> mCacheFrameBuffers = new LinkedList<>();
-    private FrameBuffer mRenderFBO;
+    private FrameBuffer mRenderFBO;     // 要将上屏的这一个texture保存起来送去录制，不然会丢
     private FrameBufferFactory mRenderFboFactory;
     private int mWidth, mHeight;
 
@@ -81,31 +112,48 @@ public class Texture2DRender {
         checkFilterInit();
         checkFilterFrameBuffer(true);
 
-        int texId = drawTextureInner(textureId, cameraMatrix, textureMatrix);
-        texId = drawWaterMark(texId, cameraMatrix, textureMatrix);
-
         mRenderFBO.bind();
-        mCopyFilter.draw(texId, null, null);
+        // **************
+        mActions.clear();
+        mActions.add(mDrawTextureAction);
+        if (mWatermarkFilter != null) {
+            mActions.add(mDrawWaterMarkAction);
+        }
+        doAllAction(textureId, cameraMatrix, textureMatrix);
+        // **************
         mRenderFBO.unbind();
+
         mCopyFilter.draw(mRenderFBO.getTextureId(), null, null);
 
         checkFilterFrameBuffer(false);
         repayAllFrameBuffers();
     }
 
-    private int drawTextureInner(int textureId, float[] cameraMatrix, float[] textureMatrix) {
-        if (mLeftFilter == null && mRightFilter == null) {
-            return textureId;
+    private void doAllAction(int textureId, float[] cameraMatrix, float[] textureMatrix) {
+        int drawTexId = textureId;
+        for (int i = 0;i < mActions.size(); i++) {
+            Action action = mActions.get(i);
+            if (i == mActions.size() - 1) {
+                action.doAction(drawTexId, cameraMatrix, textureMatrix);
+            } else {
+                FrameBuffer fbo = applyFrameBuffer();
+                fbo.bind();
+                action.doAction(drawTexId, cameraMatrix, textureMatrix);
+                fbo.unbind();
+                drawTexId = fbo.getTextureId();
+            }
         }
-        FrameBuffer fbo = applyFrameBuffer();
-        fbo.bind();
+    }
+
+    private void drawTextureInner(int textureId, float[] cameraMatrix, float[] textureMatrix) {
+        if (mLeftFilter == null && mRightFilter == null) {
+            return;
+        }
         if (mRightFilter != null) {
             drawTextureScissor(textureId, cameraMatrix, textureMatrix);
         } else {
             drawTextureNormal(textureId, cameraMatrix, textureMatrix);
         }
-        fbo.unbind();
-        return fbo.getTextureId();
     }
 
     private void drawTextureScissor(int textureId, float[] cameraMatrix, float[] textureMatrix) {
@@ -128,15 +176,11 @@ public class Texture2DRender {
         mLeftFilter.draw(textureId, cameraMatrix, textureMatrix);
     }
 
-    private int drawWaterMark(int textureId, float[] cameraMatrix, float[] textureMatrix) {
+    private void drawWaterMark(int textureId, float[] cameraMatrix, float[] textureMatrix) {
         if (mWatermarkFilter == null) {
-            return textureId;
+            return;
         }
-        FrameBuffer fbo = applyFrameBuffer();
-        fbo.bind();
         mWatermarkFilter.draw(textureId, cameraMatrix, textureMatrix);
-        fbo.unbind();
-        return fbo.getTextureId();
     }
 
     private FrameBuffer applyFrameBuffer() {
@@ -248,6 +292,9 @@ public class Texture2DRender {
         if (mWatermarkFilter != null) {
             mWatermarkFilter.destroy();
         }
+    }
 
+    interface Action {
+        void doAction(int textureId, float[] cameraMatrix, float[] textureMatrix);
     }
 }

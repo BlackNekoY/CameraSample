@@ -5,12 +5,9 @@ import java.util.ArrayList
 
 class ImageFilterGroup(filters: ArrayList<GPUImageFilter>) : GPUImageFilter() {
     private val mFilters : ArrayList<GPUImageFilter> = filters
-    private lateinit var mCopyFilter : GPUImageFilter
     private var mRenderFboFactory: FrameBufferFactory? = null
 
     override fun onInitialized() {
-        mCopyFilter = GPUImageFilter()
-        mCopyFilter.init()
         for (filter in mFilters) {
             filter.init()
         }
@@ -32,17 +29,19 @@ class ImageFilterGroup(filters: ArrayList<GPUImageFilter>) : GPUImageFilter() {
         val cacheFrameBuffers = arrayOf(factory.applyFrameBuffer(), factory.applyFrameBuffer())
         for (i in mFilters.indices) {
             val filter = mFilters[i]
-
-            val fbo = cacheFrameBuffers[i % cacheFrameBuffers.size]
-            fbo.run {
-                bind()
+            if (i == mFilters.size - 1) {
+                // 滤镜链中最后一个滤镜，直接上屏
                 filter.draw(texId, cameraM, textureM)
-                unbind()
-                texId = getTextureId()
+            } else {
+                val fbo = cacheFrameBuffers[i % cacheFrameBuffers.size]
+                fbo.run {
+                    bind()
+                    filter.draw(texId, cameraM, textureM)
+                    unbind()
+                    texId = getTextureId()
+                }
             }
         }
-        mCopyFilter.draw(texId, cameraM, textureM)
-
         for (fbo in cacheFrameBuffers) {
             factory.repayFrameBuffer(fbo)
         }
